@@ -145,7 +145,7 @@ namespace CompilerLibrary.Tokenizing
 
                 CurrentToken = new IntegerToken(
                     currentLocation with { Length = length },
-                    TokenType.Identifier,
+                    TokenType.IntegerLiteral,
                     value
                 );
             }

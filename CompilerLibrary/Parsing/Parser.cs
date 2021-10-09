@@ -56,6 +56,19 @@ namespace CompilerLibrary.Parsing
         }
 
         /// <summary>
+        /// Checks if the current token is of the right type and advances
+        /// </summary>
+        /// <param name="type">The expected token type</param>
+        /// <param name="expectation">What was expected</param>
+        private void Consume(TokenType type, string expectation)
+        {
+            if (tokenizer.CurrentToken.Type != type)
+                throw new UnexpectedTokenException(tokenizer.CurrentToken, expectation);
+
+            tokenizer.NextToken();
+        }
+
+        /// <summary>
         /// Parses a single declaration statement
         /// </summary>
         /// <returns>The parsed node</returns>
@@ -67,16 +80,11 @@ namespace CompilerLibrary.Parsing
                 throw new UnexpectedTokenException(tokenizer.CurrentToken, "variable name");
 
             tokenizer.NextToken();
-            if (tokenizer.CurrentToken.Type is not TokenType.Equals)
-                throw new UnexpectedTokenException(tokenizer.CurrentToken, "=");
+            Consume(TokenType.Equals, "=");
 
-            tokenizer.NextToken();
             SyntaxNode value = ParseExpression();
+            Consume(TokenType.Semicolon, ";");
 
-            if (tokenizer.CurrentToken.Type is not TokenType.Semicolon)
-                throw new UnexpectedTokenException(tokenizer.CurrentToken, ";");
-
-            tokenizer.NextToken();
             return new VariableDeclarationNode(
                 type.Location, type, name.Value, value
             );

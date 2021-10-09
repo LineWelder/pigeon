@@ -20,4 +20,11 @@
     public record IdentifierNode(
         Location Location, string Value
     ) : SyntaxNode(Location);
+
+    /// <summary>
+    /// Represents an integer literal
+    /// </summary>
+    public record IntegerNode(
+        Location Location, long Value
+    ) : SyntaxNode(Location);
 }

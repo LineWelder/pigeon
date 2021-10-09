@@ -21,12 +21,15 @@ namespace CompilerLibrary.Tokenizing
         public bool ReachedTheEOF { get; private set; }
 
         private readonly StreamReader stream;
+        private char currentCharacter;
 
         /// <param name="stream">The stream the tokens will be read from</param>
         public Tokenizer(StreamReader stream)
         {
             this.stream = stream;
             ReachedTheEOF = false;
+
+            NextCharacter();
         }
 
         /// <summary>
@@ -39,9 +42,10 @@ namespace CompilerLibrary.Tokenizing
             if (read < 0)
             {
                 ReachedTheEOF = true;
-                return '\0';
+                read = 0;
             }
 
+            currentCharacter = (char)read;
             return (char)read;
         }
 
@@ -51,12 +55,10 @@ namespace CompilerLibrary.Tokenizing
         /// <returns>The first non white space character</returns>
         private char SkipWhiteSpaces()
         {
-            char nextCharacter;
+            while (currentCharacter != '\0' && char.IsWhiteSpace(currentCharacter))
+                NextCharacter();
 
-            do nextCharacter = NextCharacter();
-            while (nextCharacter != '\0' && char.IsWhiteSpace(nextCharacter));
-
-            return nextCharacter;
+            return currentCharacter;
         }
 
         /// <summary>
@@ -71,24 +73,30 @@ namespace CompilerLibrary.Tokenizing
         /// <returns>The token</returns>
         public Token NextToken()
         {
-            char nextCharacter = SkipWhiteSpaces();
+            SkipWhiteSpaces();
+            TokenType tokenType;
 
-            if (IsValidIdentifierStarter(nextCharacter))
+            if (IsValidIdentifierStarter(currentCharacter))
             {
                 StringBuilder identifier = new();
-                identifier.Append(nextCharacter);
+                identifier.Append(currentCharacter);
 
                 // Digits can be used in identifiers, but not as the first character
-                nextCharacter = NextCharacter();
-                while (IsValidIdentifierStarter(nextCharacter) || char.IsDigit(nextCharacter))
+                NextCharacter();
+                while (IsValidIdentifierStarter(currentCharacter) || char.IsDigit(currentCharacter))
                 {
-                    identifier.Append(nextCharacter);
-                    nextCharacter = NextCharacter();
+                    identifier.Append(currentCharacter);
+                    NextCharacter();
                 }
 
                 return new StringToken(TokenType.Identifier, identifier.ToString());
             }
-            else if (nextCharacter == '\0')
+            else if (SYMBOLS.TryGetValue(currentCharacter, out tokenType))
+            {
+                NextCharacter();
+                return new Token(tokenType);
+            }
+            else if (currentCharacter == '\0')
                 return new Token(TokenType.EndOfFile);
 
             return null;

@@ -9,7 +9,7 @@ namespace CompilerTest
     {
         static void Main(string[] args)
         {
-            string code = "test\nhello";
+            string code = "test= hello;";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);

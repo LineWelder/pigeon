@@ -98,6 +98,7 @@ namespace CompilerLibrary.Tokenizing
             long startPosition = stream.BaseStream.Position;
             Location currentLocation = new(filePath, currentLine, currentColumn, 1);
 
+            // Identifier
             if (IsValidIdentifierStarter(currentCharacter))
             {
                 StringBuilder identifier = new();
@@ -117,6 +118,8 @@ namespace CompilerLibrary.Tokenizing
                     identifier.ToString()
                 );
             }
+
+            // Symbol
             else if (SYMBOLS.TryGetValue(currentCharacter, out tokenType))
             {
                 NextCharacter();
@@ -125,6 +128,8 @@ namespace CompilerLibrary.Tokenizing
                     tokenType
                 );
             }
+
+            // End of file
             else if (currentCharacter == '\0')
                 return new Token(
                     currentLocation with { Length = 0 },

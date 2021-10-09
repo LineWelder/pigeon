@@ -102,6 +102,7 @@ namespace CompilerLibrary.Tokenizing
             if (IsValidIdentifierStarter(currentCharacter))
             {
                 StringBuilder identifier = new();
+                int length = 1;
                 identifier.Append(currentCharacter);
 
                 // Digits can be used in identifiers, but not as the first character
@@ -109,13 +110,35 @@ namespace CompilerLibrary.Tokenizing
                 while (IsValidIdentifierStarter(currentCharacter) || char.IsDigit(currentCharacter))
                 {
                     identifier.Append(currentCharacter);
+                    length++;
                     NextCharacter();
                 }
 
                 return new StringToken(
-                    currentLocation with { Length = (int)(stream.BaseStream.Position - startPosition) },
+                    currentLocation with { Length = length },
                     TokenType.Identifier,
                     identifier.ToString()
+                );
+            }
+
+            // Integer literal
+            else if (char.IsDigit(currentCharacter))
+            {
+                long value = currentCharacter - '0';
+                int length = 1;
+
+                NextCharacter();
+                while (char.IsDigit(currentCharacter))
+                {
+                    value = 10 * value + currentCharacter - '0';
+                    length++;
+                    NextCharacter();
+                }
+
+                return new IntegerToken(
+                    currentLocation with { Length = length },
+                    TokenType.Identifier,
+                    value
                 );
             }
 

@@ -17,7 +17,7 @@
     /// <summary>
     /// Represents a token containing an integer value
     /// </summary>
-    public record IntegerToken(Location Location, TokenType Type, int Value)
+    public record IntegerToken(Location Location, TokenType Type, long Value)
         : Token(Location, Type);
 
     /// <summary>

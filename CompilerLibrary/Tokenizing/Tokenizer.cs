@@ -97,8 +97,6 @@ namespace CompilerLibrary.Tokenizing
         {
             SkipWhiteSpaces();
             TokenType tokenType;
-
-            long startPosition = stream.BaseStream.Position;
             Location currentLocation = new(filePath, currentLine, currentColumn, 1);
 
             // Identifier

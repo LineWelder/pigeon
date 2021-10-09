@@ -3,9 +3,9 @@
     /// <summary>
     /// Represents a code element's location within the source
     /// </summary>
-    public record Location(string FilePath, int Line, int Column, int Length)
+    public record Location(string FilePath, int Line, int Column)
     {
         public override string ToString()
-            => $"File \"{FilePath}\" at {Line}:{Column} length {Length}";
+            => $"File \"{FilePath}\" at {Line}:{Column}";
     }
 }

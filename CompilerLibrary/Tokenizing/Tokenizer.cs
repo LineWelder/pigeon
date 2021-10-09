@@ -104,13 +104,12 @@ namespace CompilerLibrary.Tokenizing
         {
             SkipWhiteSpaces();
             TokenType tokenType;
-            Location currentLocation = new(filePath, currentLine, currentColumn, 1);
+            Location currentLocation = new(filePath, currentLine, currentColumn);
 
             // Identifier
             if (IsValidIdentifierStarter(currentCharacter))
             {
                 StringBuilder identifier = new();
-                int length = 1;
                 identifier.Append(currentCharacter);
 
                 // Digits can be used in identifiers, but not as the first character
@@ -118,12 +117,11 @@ namespace CompilerLibrary.Tokenizing
                 while (IsValidIdentifierStarter(currentCharacter) || char.IsDigit(currentCharacter))
                 {
                     identifier.Append(currentCharacter);
-                    length++;
                     NextCharacter();
                 }
 
                 CurrentToken = new StringToken(
-                    currentLocation with { Length = length },
+                    currentLocation,
                     TokenType.Identifier,
                     identifier.ToString()
                 );
@@ -144,7 +142,7 @@ namespace CompilerLibrary.Tokenizing
                 }
 
                 CurrentToken = new IntegerToken(
-                    currentLocation with { Length = length },
+                    currentLocation,
                     TokenType.IntegerLiteral,
                     value
                 );
@@ -163,7 +161,7 @@ namespace CompilerLibrary.Tokenizing
             // End of file
             else if (currentCharacter == '\0')
                 CurrentToken = new Token(
-                    currentLocation with { Length = 0 },
+                    currentLocation,
                     TokenType.EndOfFile
                 );
 

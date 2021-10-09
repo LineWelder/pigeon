@@ -12,8 +12,8 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-i32 test = 2 + 3;
-";
+i32 test = 2;
+i32 test2 = test;";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);
@@ -22,6 +22,7 @@ i32 test = 2 + 3;
 
             try
             {
+                Console.WriteLine(parser.Parse());
                 Console.WriteLine(parser.Parse());
             }
             catch (CompilerException ex)

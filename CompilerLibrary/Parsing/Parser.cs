@@ -1,4 +1,5 @@
-﻿using CompilerLibrary.Tokenizing;
+﻿using CompilerLibrary.Parsing.Exceptions;
+using CompilerLibrary.Tokenizing;
 
 namespace CompilerLibrary.Parsing
 {
@@ -12,6 +13,7 @@ namespace CompilerLibrary.Parsing
         public Parser(Tokenizer tokenizer)
         {
             this.tokenizer = tokenizer;
+            tokenizer.NextToken();
         }
 
         /// <summary>
@@ -20,16 +22,64 @@ namespace CompilerLibrary.Parsing
         /// <returns>The parsed node</returns>
         private SyntaxNode ParseType()
         {
-            throw new System.NotImplementedException();
+            Token token = tokenizer.CurrentToken;
+            tokenizer.NextToken();
+
+            return token switch
+            {
+                StringToken { Type: TokenType.Identifier } identifier =>
+                    new IdentifierNode(identifier.Location, identifier.Value),
+
+                _ => throw new UnexpectedTokenException(tokenizer.CurrentToken)
+            };
         }
 
         /// <summary>
-        /// Parses a single declaration
+        /// Parses an expression
+        /// </summary>
+        /// <returns>The parsed node</returns>
+        private SyntaxNode ParseExpression()
+        {
+            Token token = tokenizer.CurrentToken;
+            tokenizer.NextToken();
+
+            return token switch
+            {
+                StringToken { Type: TokenType.Identifier } identifier =>
+                    new IdentifierNode(identifier.Location, identifier.Value),
+
+                IntegerToken { Type: TokenType.IntegerLiteral } integer =>
+                    new IntegerNode(integer.Location, integer.Value),
+
+                _ => throw new UnexpectedTokenException(token, "expression")
+            };
+        }
+
+        /// <summary>
+        /// Parses a single declaration statement
         /// </summary>
         /// <returns>The parsed node</returns>
         public SyntaxNode Parse()
         {
-            throw new System.NotImplementedException();
+            SyntaxNode type = ParseType();
+
+            if (tokenizer.CurrentToken is not StringToken { Type: TokenType.Identifier } name)
+                throw new UnexpectedTokenException(tokenizer.CurrentToken, "variable name");
+
+            tokenizer.NextToken();
+            if (tokenizer.CurrentToken.Type is not TokenType.Equals)
+                throw new UnexpectedTokenException(tokenizer.CurrentToken, "=");
+
+            tokenizer.NextToken();
+            SyntaxNode value = ParseExpression();
+
+            if (tokenizer.CurrentToken.Type is not TokenType.Semicolon)
+                throw new UnexpectedTokenException(tokenizer.CurrentToken, ";");
+
+            tokenizer.NextToken();
+            return new VariableDeclarationNode(
+                type.Location, type, name.Value, value
+            );
         }
     }
 }

@@ -6,6 +6,7 @@
         Identifier,
         IntegerLiteral,
         Equals,
+        Plus, Minus, Star, Slash,
         Semicolon
     }
 

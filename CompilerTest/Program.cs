@@ -11,9 +11,7 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-i32 test = 29;
-i32 anti_test = 20;
-i32 anti_test2 = 43;
+i32 test = 2 + 3;
 ";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);

@@ -13,6 +13,10 @@ namespace CompilerLibrary.Tokenizing
         private readonly Dictionary<char, TokenType> SYMBOLS = new()
         {
             { '=', TokenType.Equals },
+            { '+', TokenType.Plus },
+            { '-', TokenType.Minus },
+            { '*', TokenType.Star },
+            { '/', TokenType.Slash },
             { ';', TokenType.Semicolon }
         };
 

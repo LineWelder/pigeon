@@ -50,6 +50,9 @@ namespace CompilerLibrary.Tokenizing
             if (read < 0)
             {
                 currentCharacter = '\0';
+                if (currentColumn == -1)
+                    currentColumn = 0;
+
                 ReachedTheEOF = true;
             }
             else

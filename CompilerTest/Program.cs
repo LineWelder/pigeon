@@ -10,7 +10,11 @@ namespace CompilerTest
     {
         static void Main(string[] args)
         {
-            string code = "i32 test \n= 29;";
+            string code = @"
+i32 test = 29;
+i32 anti_test = 20;
+i32 anti_test2 = 43;
+";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);

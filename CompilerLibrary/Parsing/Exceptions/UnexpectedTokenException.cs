@@ -1,0 +1,15 @@
+﻿using CompilerLibrary.Tokenizing;
+
+namespace CompilerLibrary.Parsing.Exceptions
+{
+    public class UnexpectedTokenException : CompilerException
+    {
+        public Token Token { get; init; }
+
+        public UnexpectedTokenException(Token token)
+            : base(token.Location, $"Unexpected token type {token.Type}")
+        {
+            Token = token;
+        }
+    }
+}

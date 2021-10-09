@@ -2,6 +2,7 @@
 {
     public enum TokenType
     {
+        EndOfFile,
         Identifier,
         IntegerLiteral,
         Equals,

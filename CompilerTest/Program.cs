@@ -15,9 +15,8 @@ namespace CompilerTest
             MemoryStream stream = new(byteArray);
             Tokenizer tokenizer = new(new StreamReader(stream));
 
-            Console.WriteLine(tokenizer.NextToken());
-            Console.WriteLine(tokenizer.NextToken());
-            Console.WriteLine(tokenizer.NextToken());
+            do Console.WriteLine(tokenizer.NextToken());
+            while (!tokenizer.ReachedTheEOF);
         }
     }
 }

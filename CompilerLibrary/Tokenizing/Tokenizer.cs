@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using CompilerLibrary.Tokenizing.Exceptions;
 
 namespace CompilerLibrary.Tokenizing
 {
@@ -95,7 +96,7 @@ namespace CompilerLibrary.Tokenizing
             TokenType tokenType;
 
             long startPosition = stream.BaseStream.Position;
-            Location currentLocation = new(filePath, currentLine, currentColumn, 0);
+            Location currentLocation = new(filePath, currentLine, currentColumn, 1);
 
             if (IsValidIdentifierStarter(currentCharacter))
             {
@@ -120,17 +121,17 @@ namespace CompilerLibrary.Tokenizing
             {
                 NextCharacter();
                 return new Token(
-                    currentLocation with { Length = 1 },
+                    currentLocation,
                     tokenType
                 );
             }
             else if (currentCharacter == '\0')
                 return new Token(
-                    currentLocation,
+                    currentLocation with { Length = 0 },
                     TokenType.EndOfFile
                 );
 
-            return null;
+            throw new UnexpectedCharacterException(currentLocation, currentCharacter);
         }
     }
 }

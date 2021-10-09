@@ -25,6 +25,11 @@ namespace CompilerLibrary.Tokenizing
         /// </summary>
         public bool ReachedTheEOF { get; private set; }
 
+        /// <summary>
+        /// The last read token
+        /// </summary>
+        public Token CurrentToken { get; private set; }
+
         private readonly string filePath;
         private readonly StreamReader stream;
 
@@ -97,7 +102,7 @@ namespace CompilerLibrary.Tokenizing
         /// Consumes the next token
         /// </summary>
         /// <returns>The token</returns>
-        public Token NextToken()
+        public void NextToken()
         {
             SkipWhiteSpaces();
             TokenType tokenType;
@@ -119,7 +124,7 @@ namespace CompilerLibrary.Tokenizing
                     NextCharacter();
                 }
 
-                return new StringToken(
+                CurrentToken = new StringToken(
                     currentLocation with { Length = length },
                     TokenType.Identifier,
                     identifier.ToString()
@@ -140,7 +145,7 @@ namespace CompilerLibrary.Tokenizing
                     NextCharacter();
                 }
 
-                return new IntegerToken(
+                CurrentToken = new IntegerToken(
                     currentLocation with { Length = length },
                     TokenType.Identifier,
                     value
@@ -151,7 +156,7 @@ namespace CompilerLibrary.Tokenizing
             else if (SYMBOLS.TryGetValue(currentCharacter, out tokenType))
             {
                 NextCharacter();
-                return new Token(
+                CurrentToken = new Token(
                     currentLocation,
                     tokenType
                 );
@@ -159,7 +164,7 @@ namespace CompilerLibrary.Tokenizing
 
             // End of file
             else if (currentCharacter == '\0')
-                return new Token(
+                CurrentToken = new Token(
                     currentLocation with { Length = 0 },
                     TokenType.EndOfFile
                 );

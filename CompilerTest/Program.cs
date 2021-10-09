@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using CompilerLibrary;
+using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 namespace CompilerTest
@@ -17,11 +18,11 @@ i32 test = 2 + 3;
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);
             Tokenizer tokenizer = new("<string>", new StreamReader(stream));
+            Parser parser = new(tokenizer);
 
             try
             {
-                do Console.WriteLine(tokenizer.NextToken());
-                while (!tokenizer.ReachedTheEOF);
+                Console.WriteLine(parser.Parse());
             }
             catch (CompilerException ex)
             {

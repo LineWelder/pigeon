@@ -20,16 +20,23 @@ namespace CompilerLibrary.Tokenizing
         /// </summary>
         public bool ReachedTheEOF { get; private set; }
 
+        private readonly string filePath;
         private readonly StreamReader stream;
+
         private char currentCharacter;
+        private int currentLine;
+        private int currentColumn;
 
         /// <param name="stream">The stream the tokens will be read from</param>
-        public Tokenizer(StreamReader stream)
+        public Tokenizer(string filePath, StreamReader stream)
         {
+            this.filePath = filePath;
             this.stream = stream;
             ReachedTheEOF = false;
 
             NextCharacter();
+            currentLine = 0;
+            currentColumn = 0;
         }
 
         /// <summary>
@@ -41,12 +48,23 @@ namespace CompilerLibrary.Tokenizing
             int read = stream.Read();
             if (read < 0)
             {
+                currentCharacter = '\0';
                 ReachedTheEOF = true;
-                read = 0;
+            }
+            else
+            {
+                currentCharacter = (char)read;
+
+                if (currentCharacter == '\n')
+                {
+                    currentColumn = -1;
+                    currentLine++;
+                }
+                else
+                    currentColumn++;
             }
 
-            currentCharacter = (char)read;
-            return (char)read;
+            return currentCharacter;
         }
 
         /// <summary>
@@ -76,6 +94,9 @@ namespace CompilerLibrary.Tokenizing
             SkipWhiteSpaces();
             TokenType tokenType;
 
+            long startPosition = stream.BaseStream.Position;
+            Location currentLocation = new(filePath, currentLine, currentColumn, 0);
+
             if (IsValidIdentifierStarter(currentCharacter))
             {
                 StringBuilder identifier = new();
@@ -89,15 +110,25 @@ namespace CompilerLibrary.Tokenizing
                     NextCharacter();
                 }
 
-                return new StringToken(TokenType.Identifier, identifier.ToString());
+                return new StringToken(
+                    currentLocation with { Length = (int)(stream.BaseStream.Position - startPosition) },
+                    TokenType.Identifier,
+                    identifier.ToString()
+                );
             }
             else if (SYMBOLS.TryGetValue(currentCharacter, out tokenType))
             {
                 NextCharacter();
-                return new Token(tokenType);
+                return new Token(
+                    currentLocation with { Length = 1 },
+                    tokenType
+                );
             }
             else if (currentCharacter == '\0')
-                return new Token(TokenType.EndOfFile);
+                return new Token(
+                    currentLocation,
+                    TokenType.EndOfFile
+                );
 
             return null;
         }

@@ -9,11 +9,11 @@ namespace CompilerTest
     {
         static void Main(string[] args)
         {
-            string code = "test= hello;";
+            string code = "i32 test \n= hello;";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);
-            Tokenizer tokenizer = new(new StreamReader(stream));
+            Tokenizer tokenizer = new("<string>", new StreamReader(stream));
 
             do Console.WriteLine(tokenizer.NextToken());
             while (!tokenizer.ReachedTheEOF);

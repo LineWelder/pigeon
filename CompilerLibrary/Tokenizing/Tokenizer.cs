@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace CompilerLibrary.Tokenizing
 {
@@ -23,12 +24,36 @@ namespace CompilerLibrary.Tokenizing
         }
 
         /// <summary>
+        /// Checkes if an identifier can start with the given character
+        /// </summary>
+        private static bool IsValidIdentifierStarter(char ch)
+            => ch is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_';
+
+        /// <summary>
         /// Consumes the next token
         /// </summary>
         /// <returns>The token</returns>
         public Token NextToken()
         {
-            throw new System.NotImplementedException();
+            char nextCharacter = (char)stream.Read();
+
+            if (IsValidIdentifierStarter(nextCharacter))
+            {
+                StringBuilder identifier = new();
+                identifier.Append(nextCharacter);
+
+                // Digits can be used in identifiers, but not as the first character
+                nextCharacter = (char)stream.Read();
+                while (IsValidIdentifierStarter(nextCharacter) || char.IsDigit(nextCharacter))
+                {
+                    identifier.Append(nextCharacter);
+                    nextCharacter = (char)stream.Read();
+                }
+
+                return new StringToken(TokenType.Identifier, identifier.ToString());
+            }
+
+            return null;
         }
     }
 }

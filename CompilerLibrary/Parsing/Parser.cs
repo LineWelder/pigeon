@@ -9,12 +9,20 @@ namespace CompilerLibrary.Parsing
     /// </summary>
     public class Parser
     {
-        private readonly Dictionary<TokenType, (BinaryNodeType type, int priority)> BINARY_OPERATIONS = new()
+        private readonly Dictionary<TokenType, BinaryNodeType> BINARY_OPERATIONS = new()
         {
-            { TokenType.Plus, (BinaryNodeType.Addition, 0) },
-            { TokenType.Minus, (BinaryNodeType.Subtraction, 0) },
-            { TokenType.Star, (BinaryNodeType.Multiplication, 1) },
-            { TokenType.Slash, (BinaryNodeType.Divizion, 1) }
+            { TokenType.Plus, BinaryNodeType.Addition },
+            { TokenType.Minus, BinaryNodeType.Subtraction },
+            { TokenType.Star, BinaryNodeType.Multiplication },
+            { TokenType.Slash, BinaryNodeType.Divizion }
+        };
+
+        private readonly Dictionary<BinaryNodeType, int> BINARY_OPERATION_PRIORITIES = new()
+        {
+            { BinaryNodeType.Addition, 0 },
+            { BinaryNodeType.Subtraction, 0 },
+            { BinaryNodeType.Multiplication, 1 },
+            { BinaryNodeType.Divizion, 1 }
         };
 
         private readonly Tokenizer tokenizer;
@@ -74,17 +82,41 @@ namespace CompilerLibrary.Parsing
             };
 
             tokenizer.NextToken();
-            if (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out var operation))
+            if (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out var operationType))
             {
                 tokenizer.NextToken();
+                SyntaxNode rightExpression = ParseExpression();
+
+                // By default the expression will be returned right-to-left, but
+                // if the right operation is not more prior than the current
+                // then we need to make the right operation the parent one
+                // a ? (b ? c) -> (a ? b) ? c
+                if (rightExpression is BinaryNode rightExpressionBinary
+                    && BINARY_OPERATION_PRIORITIES[rightExpressionBinary.Type]
+                           <= BINARY_OPERATION_PRIORITIES[operationType])
+                {
+                    return new BinaryNode(
+                        primaryExpression.Location,
+                        rightExpressionBinary.Type,
+                        Left: new BinaryNode(
+                            primaryExpression.Location,
+                            operationType,
+                            primaryExpression,
+                            rightExpressionBinary.Left
+                        ),
+                        Right: rightExpressionBinary.Right
+                    );
+                }
+
                 return new BinaryNode(
                     primaryExpression.Location,
-                    operation.type,
-                    primaryExpression,
-                    ParseExpression()
+                    operationType,
+                    Left: primaryExpression,
+                    Right: rightExpression
                 );
             }
 
+            // If there is no operator
             return primaryExpression;
         }
 

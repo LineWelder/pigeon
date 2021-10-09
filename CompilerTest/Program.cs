@@ -12,7 +12,7 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-i32 test = 2 + 3 - a;";
+i32 test = 2 + 3 - a / b;";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);

@@ -53,7 +53,7 @@ namespace CompilerLibrary.Tokenizing
         /// Reads the next character in the stream
         /// </summary>
         /// <returns>The read character or 0 if reached the EOF</returns>
-        private char NextCharacter()
+        private void NextCharacter()
         {
             int read = stream.Read();
             if (read < 0)
@@ -76,8 +76,6 @@ namespace CompilerLibrary.Tokenizing
                 else
                     currentColumn++;
             }
-
-            return currentCharacter;
         }
 
         /// <summary>
@@ -169,7 +167,7 @@ namespace CompilerLibrary.Tokenizing
                     TokenType.EndOfFile
                 );
 
-            throw new UnexpectedCharacterException(currentLocation, currentCharacter);
+            else throw new UnexpectedCharacterException(currentLocation, currentCharacter);
         }
     }
 }

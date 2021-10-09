@@ -8,11 +8,24 @@ namespace CompilerLibrary.Parsing
     /// </summary>
     public class Parser
     {
-        private Tokenizer tokenizer;
+        private readonly Tokenizer tokenizer;
 
         public Parser(Tokenizer tokenizer)
         {
             this.tokenizer = tokenizer;
+            tokenizer.NextToken();
+        }
+
+        /// <summary>
+        /// Checks if the current token is of the right type and advances
+        /// </summary>
+        /// <param name="type">The expected token type</param>
+        /// <param name="expectation">What was expected</param>
+        private void Consume(TokenType type, string expectation)
+        {
+            if (tokenizer.CurrentToken.Type != type)
+                throw new UnexpectedTokenException(tokenizer.CurrentToken, expectation);
+
             tokenizer.NextToken();
         }
 
@@ -53,19 +66,6 @@ namespace CompilerLibrary.Parsing
 
                 _ => throw new UnexpectedTokenException(token, "expression")
             };
-        }
-
-        /// <summary>
-        /// Checks if the current token is of the right type and advances
-        /// </summary>
-        /// <param name="type">The expected token type</param>
-        /// <param name="expectation">What was expected</param>
-        private void Consume(TokenType type, string expectation)
-        {
-            if (tokenizer.CurrentToken.Type != type)
-                throw new UnexpectedTokenException(tokenizer.CurrentToken, expectation);
-
-            tokenizer.NextToken();
         }
 
         /// <summary>

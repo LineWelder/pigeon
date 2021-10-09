@@ -1,4 +1,5 @@
-﻿using CompilerLibrary.Parsing.Exceptions;
+﻿using System.Collections.Generic;
+using CompilerLibrary.Parsing.Exceptions;
 using CompilerLibrary.Tokenizing;
 
 namespace CompilerLibrary.Parsing
@@ -8,6 +9,14 @@ namespace CompilerLibrary.Parsing
     /// </summary>
     public class Parser
     {
+        private readonly Dictionary<TokenType, (BinaryNodeType type, int priority)> BINARY_OPERATIONS = new()
+        {
+            { TokenType.Plus, (BinaryNodeType.Addition, 0) },
+            { TokenType.Minus, (BinaryNodeType.Subtraction, 0) },
+            { TokenType.Star, (BinaryNodeType.Multiplication, 1) },
+            { TokenType.Slash, (BinaryNodeType.Divizion, 1) }
+        };
+
         private readonly Tokenizer tokenizer;
 
         public Parser(Tokenizer tokenizer)
@@ -53,10 +62,7 @@ namespace CompilerLibrary.Parsing
         /// <returns>The parsed node</returns>
         private SyntaxNode ParseExpression()
         {
-            Token token = tokenizer.CurrentToken;
-            tokenizer.NextToken();
-
-            return token switch
+            SyntaxNode primaryExpression = tokenizer.CurrentToken switch
             {
                 StringToken { Type: TokenType.Identifier } identifier =>
                     new IdentifierNode(identifier.Location, identifier.Value),
@@ -64,8 +70,22 @@ namespace CompilerLibrary.Parsing
                 IntegerToken { Type: TokenType.IntegerLiteral } integer =>
                     new IntegerNode(integer.Location, integer.Value),
 
-                _ => throw new UnexpectedTokenException(token, "expression")
+                _ => throw new UnexpectedTokenException(tokenizer.CurrentToken, "expression")
             };
+
+            tokenizer.NextToken();
+            if (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out var operation))
+            {
+                tokenizer.NextToken();
+                return new BinaryNode(
+                    primaryExpression.Location,
+                    operation.type,
+                    primaryExpression,
+                    ParseExpression()
+                );
+            }
+
+            return primaryExpression;
         }
 
         /// <summary>

@@ -27,4 +27,20 @@
     public record IntegerNode(
         Location Location, long Value
     ) : SyntaxNode(Location);
+
+    public enum BinaryNodeType
+    {
+        Addition,
+        Subtraction,
+        Multiplication,
+        Divizion
+    }
+
+    /// <summary>
+    /// Represents a binary expression
+    /// </summary>
+    public record BinaryNode(
+        Location Location, BinaryNodeType Type,
+        SyntaxNode Left, SyntaxNode Right
+    ) : SyntaxNode(Location);
 }

@@ -16,6 +16,8 @@ namespace CompilerTest
             Tokenizer tokenizer = new(new StreamReader(stream));
 
             Console.WriteLine(tokenizer.NextToken());
+            Console.WriteLine(tokenizer.NextToken());
+            Console.WriteLine(tokenizer.NextToken());
         }
     }
 }

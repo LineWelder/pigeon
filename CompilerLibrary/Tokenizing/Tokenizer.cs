@@ -24,6 +24,20 @@ namespace CompilerLibrary.Tokenizing
         }
 
         /// <summary>
+        /// Skips the white spaces and stops on the first non white space character
+        /// </summary>
+        /// <returns>The first non white space character</returns>
+        private char SkipWhiteSpaces()
+        {
+            char nextCharacter;
+
+            do nextCharacter = (char)stream.Read();
+            while (char.IsWhiteSpace(nextCharacter));
+
+            return nextCharacter;
+        }
+
+        /// <summary>
         /// Checkes if an identifier can start with the given character
         /// </summary>
         private static bool IsValidIdentifierStarter(char ch)
@@ -35,7 +49,7 @@ namespace CompilerLibrary.Tokenizing
         /// <returns>The token</returns>
         public Token NextToken()
         {
-            char nextCharacter = (char)stream.Read();
+            char nextCharacter = SkipWhiteSpaces();
 
             if (IsValidIdentifierStarter(nextCharacter))
             {

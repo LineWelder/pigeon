@@ -7,6 +7,7 @@
         IntegerLiteral,
         Equals,
         Plus, Minus, Star, Slash,
+        LeftParenthesis, RightParenthesis,
         Semicolon
     }
 

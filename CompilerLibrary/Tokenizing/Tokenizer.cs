@@ -17,6 +17,8 @@ namespace CompilerLibrary.Tokenizing
             { '-', TokenType.Minus },
             { '*', TokenType.Star },
             { '/', TokenType.Slash },
+            { '(', TokenType.LeftParenthesis },
+            { ')', TokenType.RightParenthesis },
             { ';', TokenType.Semicolon }
         };
 

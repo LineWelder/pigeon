@@ -70,28 +70,43 @@ namespace CompilerLibrary.Parsing
         /// <returns>The parsed node</returns>
         private SyntaxNode ParseExpression()
         {
-            SyntaxNode primaryExpression = tokenizer.CurrentToken switch
-            {
-                StringToken { Type: TokenType.Identifier } identifier =>
-                    new IdentifierNode(identifier.Location, identifier.Value),
+            SyntaxNode primaryExpression;
 
-                IntegerToken { Type: TokenType.IntegerLiteral } integer =>
-                    new IntegerNode(integer.Location, integer.Value),
-
-                _ => throw new UnexpectedTokenException(tokenizer.CurrentToken, "expression")
-            };
-
+            Token firstToken = tokenizer.CurrentToken;
             tokenizer.NextToken();
+
+            switch (firstToken)
+            {
+                case StringToken { Type: TokenType.Identifier } identifier:
+                    primaryExpression = new IdentifierNode(identifier.Location, identifier.Value);
+                    break;
+
+                case IntegerToken { Type: TokenType.IntegerLiteral } integer:
+                    primaryExpression = new IntegerNode(integer.Location, integer.Value);
+                    break;
+
+                case { Type: TokenType.LeftParenthesis }:
+                    primaryExpression = ParseExpression();
+                    Consume(TokenType.RightParenthesis, ")");
+                    break;
+
+                default:
+                    throw new UnexpectedTokenException(firstToken, "expression");
+            }
+
             if (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out var operationType))
             {
                 tokenizer.NextToken();
+                bool rightExpressionIsInParentheses = tokenizer.CurrentToken.Type == TokenType.LeftParenthesis;
+
                 SyntaxNode rightExpression = ParseExpression();
 
                 // By default the expression will be returned right-to-left, but
                 // if the right operation is not more prior than the current
                 // then we need to make the right operation the parent one
-                // a ? (b ? c) -> (a ? b) ? c
-                if (rightExpression is BinaryNode rightExpressionBinary
+                // op(a, op(b, c)) -> op(op(a, b), c)
+                if (!rightExpressionIsInParentheses
+                    && rightExpression is BinaryNode rightExpressionBinary
                     && BINARY_OPERATION_PRIORITIES[rightExpressionBinary.Type]
                            <= BINARY_OPERATION_PRIORITIES[operationType])
                 {

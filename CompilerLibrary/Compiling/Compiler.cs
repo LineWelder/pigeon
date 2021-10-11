@@ -52,7 +52,7 @@ namespace CompilerLibrary.Compiling
             if (function.ArgumentList.Length > 0)
                 builder.Append('@');
             foreach (FunctionArgumentDeclarationNode argument in function.ArgumentList)
-                builder.Append(GetCompiledType(argument.Type));
+                builder.Append(GetCompiledType(argument.Type).Abbreviation);
 
             return builder.ToString();
         }

@@ -7,11 +7,28 @@
 
     /// <summary>
     /// Represents a variable declaration
-    /// <VariableType> <Identifier> = <Value>;
     /// </summary>
     public record VariableDeclarationNode(
         Location Location,
         SyntaxNode VariableType, string Identifier, SyntaxNode Value
+    ) : SyntaxNode(Location);
+
+    /// <summary>
+    /// Represents a function argument declaration
+    /// </summary>
+    public record FunctionArgumentDeclarationNode(
+        Location Location,
+        SyntaxNode VariableType, string Identifier
+    ) : SyntaxNode(Location);
+
+    /// <summary>
+    /// Represents a function declaration
+    /// </summary>
+    public record FunctionDeclarationNode(
+        Location Location,
+        SyntaxNode ReturnType, string Identifier,
+        FunctionArgumentDeclarationNode[] ArgumentList,
+        SyntaxNode Body
     ) : SyntaxNode(Location);
 
     /// <summary>

@@ -8,7 +8,8 @@
         Equals,
         Plus, Minus, Star, Slash,
         LeftParenthesis, RightParenthesis,
-        Semicolon
+        LeftCurlyBrace, RightCurlyBrace,
+        Coma, Semicolon
     }
 
     /// <summary>

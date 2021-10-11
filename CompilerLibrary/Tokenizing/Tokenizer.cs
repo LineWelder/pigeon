@@ -19,6 +19,9 @@ namespace CompilerLibrary.Tokenizing
             { '/', TokenType.Slash },
             { '(', TokenType.LeftParenthesis },
             { ')', TokenType.RightParenthesis },
+            { '{', TokenType.LeftCurlyBrace },
+            { '}', TokenType.RightCurlyBrace },
+            { ',', TokenType.Coma },
             { ';', TokenType.Semicolon }
         };
 

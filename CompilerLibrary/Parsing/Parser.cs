@@ -97,7 +97,7 @@ namespace CompilerLibrary.Parsing
             if (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out var operationType))
             {
                 tokenizer.NextToken();
-                bool rightExpressionIsInParentheses = tokenizer.CurrentToken.Type == TokenType.LeftParenthesis;
+                bool rightExpressionIsInParentheses = tokenizer.CurrentToken.Type is TokenType.LeftParenthesis;
 
                 SyntaxNode rightExpression = ParseExpression();
 
@@ -136,6 +136,46 @@ namespace CompilerLibrary.Parsing
         }
 
         /// <summary>
+        /// Parses arguments for function declaration skipping the left parenthesis
+        /// </summary>
+        /// <returns>The parsed nodes</returns>
+        private FunctionArgumentDeclarationNode[] ParseArgumentListDeclaration()
+        {
+            List<FunctionArgumentDeclarationNode> argumentList = new();
+
+            if (tokenizer.CurrentToken.Type is TokenType.RightParenthesis)
+                return argumentList.ToArray();
+
+            while (true)
+            {
+                SyntaxNode argumentType = ParseType();
+                if (tokenizer.CurrentToken is not StringToken { Type: TokenType.Identifier } name)
+                    throw new UnexpectedTokenException(tokenizer.CurrentToken, "argument name");
+
+                argumentList.Add(new FunctionArgumentDeclarationNode(
+                    argumentType.Location,
+                    argumentType,
+                    name.Value
+                ));
+
+                tokenizer.NextToken();
+                switch (tokenizer.CurrentToken.Type)
+                {
+                    case TokenType.RightParenthesis:
+                        goto endOfArgumentList;
+
+                    case not TokenType.Coma:
+                        throw new UnexpectedTokenException(tokenizer.CurrentToken, ", or )");
+                }
+
+                tokenizer.NextToken();
+            }
+
+        endOfArgumentList:
+            return argumentList.ToArray();
+        }
+
+        /// <summary>
         /// Parses a single declaration statement
         /// </summary>
         /// <returns>The parsed node</returns>
@@ -147,14 +187,32 @@ namespace CompilerLibrary.Parsing
                 throw new UnexpectedTokenException(tokenizer.CurrentToken, "variable name");
 
             tokenizer.NextToken();
-            Consume(TokenType.Equals, "=");
+            Token currentToken = tokenizer.CurrentToken;
 
-            SyntaxNode value = ParseExpression();
-            Consume(TokenType.Semicolon, ";");
+            tokenizer.NextToken();
+            switch (currentToken.Type)
+            {
+                // It is a variable declaration
+                case TokenType.Equals:
+                    SyntaxNode value = ParseExpression();
+                    Consume(TokenType.Semicolon, ";");
 
-            return new VariableDeclarationNode(
-                type.Location, type, name.Value, value
-            );
+                    return new VariableDeclarationNode(
+                        type.Location, type, name.Value, value
+                    );
+
+                // It is a function declaration
+                case TokenType.LeftParenthesis:
+                    FunctionArgumentDeclarationNode[] arguments = ParseArgumentListDeclaration();
+
+                    return new FunctionDeclarationNode(
+                        type.Location, type, name.Value,
+                        arguments, null
+                    );
+
+                default:
+                    throw new UnexpectedTokenException(currentToken, "= or (");
+            }
         }
     }
 }

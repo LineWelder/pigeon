@@ -12,7 +12,10 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-i32 my_favorite_number = 29 + 1;";
+void main()
+{
+    a = 1;
+}";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);

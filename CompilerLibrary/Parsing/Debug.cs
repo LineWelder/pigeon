@@ -46,8 +46,11 @@ namespace CompilerLibrary.Parsing
                     MakeOffset();
                     Console.WriteLine('{');
                     foreach (SyntaxNode statement in functionDeclaration.Body)
+                    {
                         PrintSyntaxNode(statement, offset + 4);
-                    Console.Write("\n}");
+                        Console.WriteLine();
+                    }
+                    Console.Write('}');
 
                     break;
 
@@ -66,12 +69,20 @@ namespace CompilerLibrary.Parsing
                     Console.Write(integer.Value);
                     break;
 
-                case BinaryNode binaryNode:
+                case BinaryNode binary:
                     Console.Write('(');
-                    PrintSyntaxNode(binaryNode.Left);
-                    Console.Write($" {BINARY_OPERATORS[binaryNode.Operation]} ");
-                    PrintSyntaxNode(binaryNode.Right);
+                    PrintSyntaxNode(binary.Left);
+                    Console.Write($" {BINARY_OPERATORS[binary.Operation]} ");
+                    PrintSyntaxNode(binary.Right);
                     Console.Write(')');
+
+                    break;
+
+                case AssignmentNode assignment:
+                    PrintSyntaxNode(assignment.Left);
+                    Console.Write(" = ");
+                    PrintSyntaxNode(assignment.Right);
+                    Console.Write(';');
 
                     break;
 

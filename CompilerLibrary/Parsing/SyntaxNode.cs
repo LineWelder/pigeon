@@ -60,4 +60,12 @@
         Location Location, BinaryNodeOperation Operation,
         SyntaxNode Left, SyntaxNode Right
     ) : SyntaxNode(Location);
+
+    /// <summary>
+    /// Represents an assignment statement
+    /// </summary>
+    public record AssignmentNode(
+        Location Location,
+        SyntaxNode Left, SyntaxNode Right
+    ) : SyntaxNode(Location);
 }

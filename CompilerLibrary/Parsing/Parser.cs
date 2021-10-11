@@ -180,11 +180,19 @@ namespace CompilerLibrary.Parsing
         /// <summary>
         /// Parses a single statement
         /// </summary>
+        /// <remarks>Supports only assignment statements now</remarks>
         /// <returns>The parsed node</returns>
         private SyntaxNode ParseStatement()
         {
+            SyntaxNode left = ParseExpression();
+
+            Consume(TokenType.Equals, "=");
+
+            SyntaxNode right = ParseExpression();
+
             Consume(TokenType.Semicolon, ";");
-            return null;
+
+            return new AssignmentNode(left.Location, left, right);
         }
 
         /// <summary>

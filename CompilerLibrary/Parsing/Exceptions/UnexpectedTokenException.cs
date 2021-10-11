@@ -6,12 +6,6 @@ namespace CompilerLibrary.Parsing.Exceptions
     {
         public Token Token { get; init; }
 
-        public UnexpectedTokenException(Token token)
-            : base(token.Location, $"Unexpected token type {token.Type}")
-        {
-            Token = token;
-        }
-
         public UnexpectedTokenException(Token token, string expectation)
             : base(token.Location, $"Unexpected token type {token.Type}, {expectation} expected")
         {

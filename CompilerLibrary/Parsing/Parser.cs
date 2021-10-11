@@ -60,7 +60,7 @@ namespace CompilerLibrary.Parsing
                 StringToken { Type: TokenType.Identifier } identifier =>
                     new IdentifierNode(identifier.Location, identifier.Value),
 
-                _ => throw new UnexpectedTokenException(tokenizer.CurrentToken)
+                _ => throw new UnexpectedTokenException(tokenizer.CurrentToken, "type")
             };
         }
 

@@ -12,10 +12,7 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-void main()
-{
-
-}";
+i32 my_favorite_number = 29 + 1;";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);
@@ -24,7 +21,7 @@ void main()
 
             try
             {
-                Console.WriteLine(parser.Parse());
+                Debug.PrintSyntaxNode(parser.Parse());
             }
             catch (CompilerException ex)
             {

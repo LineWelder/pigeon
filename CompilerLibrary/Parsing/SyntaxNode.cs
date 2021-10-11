@@ -10,7 +10,7 @@
     /// </summary>
     public record VariableDeclarationNode(
         Location Location,
-        SyntaxNode VariableType, string Identifier, SyntaxNode Value
+        SyntaxNode Type, string Identifier, SyntaxNode Value
     ) : SyntaxNode(Location);
 
     /// <summary>
@@ -18,7 +18,7 @@
     /// </summary>
     public record FunctionArgumentDeclarationNode(
         Location Location,
-        SyntaxNode VariableType, string Identifier
+        SyntaxNode Type, string Identifier
     ) : SyntaxNode(Location);
 
     /// <summary>
@@ -28,7 +28,7 @@
         Location Location,
         SyntaxNode ReturnType, string Identifier,
         FunctionArgumentDeclarationNode[] ArgumentList,
-        SyntaxNode Body
+        SyntaxNode[] Body
     ) : SyntaxNode(Location);
 
     /// <summary>

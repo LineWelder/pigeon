@@ -5,12 +5,12 @@ namespace CompilerLibrary.Parsing
 {
     public static class Debug
     {
-        private static readonly Dictionary<BinaryNodeType, char> BINARY_OPERATORS= new()
+        private static readonly Dictionary<BinaryNodeOperation, char> BINARY_OPERATORS= new()
         {
-            { BinaryNodeType.Addition, '+' },
-            { BinaryNodeType.Subtraction, '-' },
-            { BinaryNodeType.Multiplication, '*' },
-            { BinaryNodeType.Divizion, '/' },
+            { BinaryNodeOperation.Addition, '+' },
+            { BinaryNodeOperation.Subtraction, '-' },
+            { BinaryNodeOperation.Multiplication, '*' },
+            { BinaryNodeOperation.Divizion, '/' },
         };
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace CompilerLibrary.Parsing
                 case BinaryNode binaryNode:
                     Console.Write('(');
                     PrintSyntaxNode(binaryNode.Left);
-                    Console.Write($" {BINARY_OPERATORS[binaryNode.Type]} ");
+                    Console.Write($" {BINARY_OPERATORS[binaryNode.Operation]} ");
                     PrintSyntaxNode(binaryNode.Right);
                     Console.Write(')');
 

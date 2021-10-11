@@ -9,20 +9,20 @@ namespace CompilerLibrary.Parsing
     /// </summary>
     public class Parser
     {
-        private readonly Dictionary<TokenType, BinaryNodeType> BINARY_OPERATIONS = new()
+        private readonly Dictionary<TokenType, BinaryNodeOperation> BINARY_OPERATIONS = new()
         {
-            { TokenType.Plus, BinaryNodeType.Addition },
-            { TokenType.Minus, BinaryNodeType.Subtraction },
-            { TokenType.Star, BinaryNodeType.Multiplication },
-            { TokenType.Slash, BinaryNodeType.Divizion }
+            { TokenType.Plus, BinaryNodeOperation.Addition },
+            { TokenType.Minus, BinaryNodeOperation.Subtraction },
+            { TokenType.Star, BinaryNodeOperation.Multiplication },
+            { TokenType.Slash, BinaryNodeOperation.Divizion }
         };
 
-        private readonly Dictionary<BinaryNodeType, int> BINARY_OPERATION_PRIORITIES = new()
+        private readonly Dictionary<BinaryNodeOperation, int> BINARY_OPERATION_PRIORITIES = new()
         {
-            { BinaryNodeType.Addition, 0 },
-            { BinaryNodeType.Subtraction, 0 },
-            { BinaryNodeType.Multiplication, 1 },
-            { BinaryNodeType.Divizion, 1 }
+            { BinaryNodeOperation.Addition, 0 },
+            { BinaryNodeOperation.Subtraction, 0 },
+            { BinaryNodeOperation.Multiplication, 1 },
+            { BinaryNodeOperation.Divizion, 1 }
         };
 
         private readonly Tokenizer tokenizer;
@@ -107,12 +107,12 @@ namespace CompilerLibrary.Parsing
                 // op(a, op(b, c)) -> op(op(a, b), c)
                 if (!rightExpressionIsInParentheses
                     && rightExpression is BinaryNode rightExpressionBinary
-                    && BINARY_OPERATION_PRIORITIES[rightExpressionBinary.Type]
+                    && BINARY_OPERATION_PRIORITIES[rightExpressionBinary.Operation]
                            <= BINARY_OPERATION_PRIORITIES[operationType])
                 {
                     return new BinaryNode(
                         primaryExpression.Location,
-                        rightExpressionBinary.Type,
+                        rightExpressionBinary.Operation,
                         Left: new BinaryNode(
                             primaryExpression.Location,
                             operationType,

@@ -45,7 +45,7 @@
         Location Location, long Value
     ) : SyntaxNode(Location);
 
-    public enum BinaryNodeType
+    public enum BinaryNodeOperation
     {
         Addition,
         Subtraction,
@@ -57,7 +57,7 @@
     /// Represents a binary expression
     /// </summary>
     public record BinaryNode(
-        Location Location, BinaryNodeType Type,
+        Location Location, BinaryNodeOperation Operation,
         SyntaxNode Left, SyntaxNode Right
     ) : SyntaxNode(Location);
 }

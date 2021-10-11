@@ -12,7 +12,10 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-void main()";
+void main()
+{
+
+}";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);

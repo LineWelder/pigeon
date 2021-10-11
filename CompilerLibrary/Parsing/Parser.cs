@@ -144,7 +144,7 @@ namespace CompilerLibrary.Parsing
             List<FunctionArgumentDeclarationNode> argumentList = new();
 
             if (tokenizer.CurrentToken.Type is TokenType.RightParenthesis)
-                return argumentList.ToArray();
+                goto endOfArgumentList;
 
             while (true)
             {
@@ -159,6 +159,7 @@ namespace CompilerLibrary.Parsing
                 ));
 
                 tokenizer.NextToken();
+
                 switch (tokenizer.CurrentToken.Type)
                 {
                     case TokenType.RightParenthesis:
@@ -172,7 +173,34 @@ namespace CompilerLibrary.Parsing
             }
 
         endOfArgumentList:
+            tokenizer.NextToken();
             return argumentList.ToArray();
+        }
+
+        /// <summary>
+        /// Parses a single statement
+        /// </summary>
+        /// <returns>The parsed node</returns>
+        private SyntaxNode ParseStatement()
+        {
+            Consume(TokenType.Semicolon, ";");
+            return null;
+        }
+
+        /// <summary>
+        /// Parses function body declaration
+        /// </summary>
+        /// <returns>The parsed nodes</returns>
+        private SyntaxNode[] ParseFunctionBodyDeclaration()
+        {
+            Consume(TokenType.LeftCurlyBrace, "{");
+            List<SyntaxNode> statementList = new();
+
+            while (tokenizer.CurrentToken.Type is not TokenType.RightCurlyBrace)
+                statementList.Add(ParseStatement());
+
+            tokenizer.NextToken();
+            return statementList.ToArray();
         }
 
         /// <summary>
@@ -204,10 +232,11 @@ namespace CompilerLibrary.Parsing
                 // It is a function declaration
                 case TokenType.LeftParenthesis:
                     FunctionArgumentDeclarationNode[] arguments = ParseArgumentListDeclaration();
+                    SyntaxNode[] body = ParseFunctionBodyDeclaration();
 
                     return new FunctionDeclarationNode(
                         type.Location, type, name.Value,
-                        arguments, null
+                        arguments, body
                     );
 
                 default:

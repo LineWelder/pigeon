@@ -13,9 +13,10 @@ namespace CompilerLibrary.Compiling
     {
         private static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
         {
-            { "i32",  new CompiledType(Size: 4, Declaration: "dd", Abbreviation: 'i') }
+            { "i32",  new CompiledType(Size: 4, Declaration: "dd", Abbreviation: 'i', IsSigned: true) }
         };
 
+        public readonly Dictionary<string, CompiledVariable> variables = new();
         public readonly Dictionary<string, CompiledFunction> functions = new();
 
         public Compiler() { }
@@ -82,6 +83,36 @@ namespace CompilerLibrary.Compiling
         }
 
         /// <summary>
+        /// Adds a global variable to the declared variables list
+        /// </summary>
+        /// <param name="variable">The variable declaration</param>
+        public void RegisterVariable(VariableDeclarationNode variable)
+        {
+            CompiledType variableType = GetCompiledType(variable.Type);
+            if (variable.Value is not IntegerNode valueInteger)
+                throw new UnexpectedSyntaxNodeException(variable.Value, "a number");
+
+            long maximumValue = variableType.MaximumValue;
+            if (valueInteger.Value > maximumValue)
+                throw new InvalidTypeCastException(
+                    variable.Value.Location,
+                    "bigger integer type",
+                    variableType.ToString(),
+                    $"the definition value must not be greater than {maximumValue}"
+                );
+
+            string assemblySymbol = $"_{variable.Identifier}";
+            string variableValue = valueInteger.Value.ToString();
+
+            variables.Add(assemblySymbol, new CompiledVariable(
+                variable.Location,
+                assemblySymbol,
+                variableType,
+                variableValue
+            ));
+        }
+
+        /// <summary>
         /// Compiles the given nodes
         /// </summary>
         public void CompileNodes(SyntaxNode[] nodes)
@@ -91,7 +122,8 @@ namespace CompilerLibrary.Compiling
                 switch (node)
                 {
                     case VariableDeclarationNode variable:
-                        throw new System.NotImplementedException();
+                        RegisterVariable(variable);
+                        break;
 
                     case FunctionDeclarationNode function:
                         CompileFunction(function);
@@ -130,6 +162,18 @@ section '.text' readable executable
             {
                 builder.AppendFormat("{0}:\n", pair.Key);
                 builder.Append(pair.Value.AssemblyCode);
+            }
+
+            builder.Append("\n\nsection '.data' readable writable\n\n");
+
+            foreach (CompiledVariable variable in variables.Values)
+            {
+                builder.AppendFormat(
+                    "{0}:\n\t{1}\t{2}\n",
+                    variable.AssemblySymbol,
+                    variable.Type.Declaration,
+                    variable.AssemblyValue
+                );
             }
 
             return builder.ToString();

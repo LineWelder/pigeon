@@ -26,7 +26,7 @@
     /// </summary>
     public record FunctionDeclarationNode(
         Location Location,
-        SyntaxNode ReturnType, string Identifier,
+        SyntaxNode? ReturnType, string Identifier,
         FunctionArgumentDeclarationNode[] ArgumentList,
         SyntaxNode[] Body
     ) : SyntaxNode(Location);

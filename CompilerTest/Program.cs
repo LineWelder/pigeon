@@ -19,23 +19,22 @@ namespace CompilerTest
         static void Main(string[] args)
         {
             string code = @"
-void main()
+i32 test = 43;
+fix()
 {
-    a = 1;
+    test = 29;
 }";
 
             byte[] byteArray = Encoding.ASCII.GetBytes(code);
             MemoryStream stream = new(byteArray);
             Tokenizer tokenizer = new("<string>", new StreamReader(stream));
             Parser parser = new(tokenizer);
-            Compiler compiler = new Compiler();
+            Compiler compiler = new();
 
             try
             {
-                FunctionDeclarationNode funciton = (FunctionDeclarationNode)parser.Parse();
-                // Debug.PrintSyntaxNode(funciton);
-                compiler.CompileFunction(funciton);
-
+                SyntaxNode[] nodes = parser.ParseFile();
+                compiler.CompileNodes(nodes);
                 Console.WriteLine(compiler.LinkAssembly());
             }
             catch (CompilerException ex)

@@ -215,26 +215,41 @@ namespace CompilerLibrary.Parsing
         /// Parses a single declaration statement
         /// </summary>
         /// <returns>The parsed node</returns>
-        public SyntaxNode Parse()
+        public SyntaxNode ParseDeclaration()
         {
-            SyntaxNode type = ParseType();
+            // First, we assume that it is a function without
+            // return type declaration
+            SyntaxNode firstNode = ParseType();
 
-            if (tokenizer.CurrentToken is not StringToken { Type: TokenType.Identifier } name)
-                throw new UnexpectedTokenException(tokenizer.CurrentToken, "variable name");
+            SyntaxNode type = null;
+            string name = (firstNode as IdentifierNode)?.Value;
+            Location location = firstNode.Location;
 
-            tokenizer.NextToken();
+            // If it is not, we change the type and name
+            if (tokenizer.CurrentToken is StringToken { Type: TokenType.Identifier } trueName)
+            {
+                type = firstNode;
+                name = trueName.Value;
+
+                tokenizer.NextToken();
+            }
+
             Token currentToken = tokenizer.CurrentToken;
-
             tokenizer.NextToken();
             switch (currentToken.Type)
             {
                 // It is a variable declaration
                 case TokenType.Equals:
+                    // It means that we have "smth = ...",
+                    // so we expect the name instead of =
+                    if (type is null)
+                        throw new UnexpectedTokenException(currentToken, "variable name");
+
                     SyntaxNode value = ParseExpression();
                     Consume(TokenType.Semicolon, ";");
 
                     return new VariableDeclarationNode(
-                        type.Location, type, name.Value, value
+                        firstNode.Location, type, name, value
                     );
 
                 // It is a function declaration
@@ -243,13 +258,28 @@ namespace CompilerLibrary.Parsing
                     SyntaxNode[] body = ParseFunctionBodyDeclaration();
 
                     return new FunctionDeclarationNode(
-                        type.Location, type, name.Value,
+                        location, type, name,
                         arguments, body
                     );
 
                 default:
                     throw new UnexpectedTokenException(currentToken, "= or (");
             }
+        }
+
+        /// <summary>
+        /// Parses all the declarations from a file
+        /// </summary>
+        /// <returns>The parsed nodes</returns>
+        public SyntaxNode[] ParseFile()
+        {
+            List<SyntaxNode> result = new();
+            while (tokenizer.CurrentToken.Type is not TokenType.EndOfFile)
+            {
+                result.Add(ParseDeclaration());
+            }
+
+            return result.ToArray();
         }
     }
 }

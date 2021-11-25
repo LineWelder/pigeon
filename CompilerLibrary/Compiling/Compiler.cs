@@ -76,7 +76,7 @@ namespace CompilerLibrary.Compiling
             functions.Add(assemblySymbol, new CompiledFunction(
                 function.Location,
                 assemblySymbol,
-                GetCompiledType(function.ReturnType),
+                function.ReturnType is null ? null : GetCompiledType(function.ReturnType),
                 arguments,
                 "\tnop\n"
             ));

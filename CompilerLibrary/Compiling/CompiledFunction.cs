@@ -11,7 +11,7 @@
     public record CompiledFunction(
         Location SourceLocation,
         string AssemblySymbol,
-        CompiledType ReturnType, FunctionArgument[] Arguments,
+        CompiledType? ReturnType, FunctionArgument[] Arguments,
         string AssemblyCode
     );
 }

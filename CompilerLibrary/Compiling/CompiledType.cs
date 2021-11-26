@@ -1,27 +1,26 @@
-﻿namespace CompilerLibrary.Compiling
+﻿namespace CompilerLibrary.Compiling;
+
+/// <summary>
+/// The representation of a type used by the compiler
+/// Size is given in bytes
+/// </summary>
+public record CompiledType(uint Size, string Declaration, char Abbreviation, bool IsSigned)
 {
     /// <summary>
-    /// The representation of a type used by the compiler
-    /// Size is given in bytes
+    /// Represents the maximum value that can be stored in a variable of this type
     /// </summary>
-    public record CompiledType(uint Size, string Declaration, char Abbreviation, bool IsSigned)
+    public long MaximumValue
     {
-        /// <summary>
-        /// Represents the maximum value that can be stored in a variable of this type
-        /// </summary>
-        public long MaximumValue
+        get
         {
-            get
-            {
-                if (Size == 0) return 0;
+            if (Size == 0) return 0;
 
-                int bitCount = (int)(8 * Size - (IsSigned ? 1 : 0));
-                long temp = 1;
-                for (int i = 0; i < bitCount; i++)
-                    temp <<= 1;
+            int bitCount = (int)(8 * Size - (IsSigned ? 1 : 0));
+            long temp = 1;
+            for (int i = 0; i < bitCount; i++)
+                temp <<= 1;
 
-                return --temp;
-            }
+            return --temp;
         }
     }
 }

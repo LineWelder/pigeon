@@ -10,6 +10,7 @@ using CompilerLibrary.Tokenizing;
 //  TODO:
 // * Make pretty ToString method for syntax nodes
 // * Make UnexpectedSyntaxNodeException write the unexpected node
+// * Merge CompiledVariable, CompiledFunction and SymbolValue
 // ====================================
 
 namespace CompilerTest;

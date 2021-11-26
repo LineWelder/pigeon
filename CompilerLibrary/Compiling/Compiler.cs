@@ -38,6 +38,13 @@ public class Compiler
     }
 
     /// <summary>
+    /// Returns the assembly symbol corresponding with the given variable name
+    /// </summary>
+    /// <returns>The assymbly symbol</returns>
+    public static string GetAssemblySymbol(string name)
+        => $"_{name}";
+
+    /// <summary>
     /// Returns the assembly symbol for function declaration
     /// </summary>
     /// <returns></returns>
@@ -103,7 +110,7 @@ public class Compiler
                 $"the definition value must not be greater than {maximumValue}"
             );
 
-        string assemblySymbol = $"_{variable.Identifier}";
+        string assemblySymbol = GetAssemblySymbol(variable.Identifier);
         string variableValue = valueInteger.Value.ToString();
 
         variables.Add(assemblySymbol, new CompiledVariable(
@@ -140,12 +147,28 @@ public class Compiler
     }
 
     /// <summary>
-    /// 
+    /// Compiels an expression and appends the compiled assembly to the builder
     /// </summary>
-    /// <returns></returns>
-    private Value CompileValue(SyntaxNode node)
+    /// <param name="builder">The assembly code builder</param>
+    /// <param name="node">The expression to compile</param>
+    /// <returns>Value representing the result of the expression</returns>
+    private Value CompileValue(StringBuilder builder, SyntaxNode node)
     {
-        throw new System.NotImplementedException();
+        switch (node)
+        {
+            case IdentifierNode identifier:
+                if (!variables.TryGetValue(
+                    GetAssemblySymbol(identifier.Value), out CompiledVariable variable
+                )) throw new UnknownIdentifierException(identifier);
+
+                return new SymbolValue(variable.Type, variable.AssemblySymbol);
+
+            case IntegerNode integer:
+                return new IntegerValue(COMPILED_TYPES["i32"], integer.Value);
+
+            default:
+                throw new UnexpectedSyntaxNodeException(node, "expression");
+        }
     }
 
     /// <summary>

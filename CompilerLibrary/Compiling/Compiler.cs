@@ -140,6 +140,35 @@ public class Compiler
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private Value CompileValue(SyntaxNode node)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    /// <summary>
+    /// Compiles a statement and appends the compiled assembly to the builder
+    /// </summary>
+    /// <param name="builder">The assembly code builder</param>
+    /// <param name="node">The statement to compile</param>
+    private void CompileStatement(StringBuilder builder, SyntaxNode node)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    /// <summary>
+    /// Compiles a function and appends the compiled assembly to the builder
+    /// </summary>
+    /// <param name="builder">The assembly code builder</param>
+    /// <param name="function">The function to compile</param>
+    private void CompileFunction(StringBuilder builder, CompiledFunction function)
+    {
+        builder.Append("\tnop\n");
+    }
+
+    /// <summary>
     /// Linkes all the compiled nodes and returns the generated FASM code
     /// </summary>
     /// <returns>The generated FASM code</returns>
@@ -163,7 +192,7 @@ section '.text' readable executable
         foreach (var pair in functions)
         {
             builder.AppendFormat("{0}:\n", pair.Key);
-            builder.Append("\tnop\n");
+            CompileFunction(builder, pair.Value);
         }
 
         builder.Append("\n\nsection '.data' readable writable\n\n");

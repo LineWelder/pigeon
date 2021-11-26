@@ -43,9 +43,11 @@ namespace CompilerLibrary.Compiling
         /// <returns></returns>
         public static string GetAssemblySymbol(FunctionDeclarationNode function)
         {
-            StringBuilder builder = new();
+            StringBuilder builder = new(
+                "_", 2 + function.Identifier.Length + function.ArgumentList.Length
+            );
 
-            builder.AppendFormat("_{0}", function.Identifier);
+            builder.Append(function.Identifier);
             if (function.ArgumentList.Length > 0)
                 builder.Append('@');
             foreach (FunctionArgumentDeclarationNode argument in function.ArgumentList)

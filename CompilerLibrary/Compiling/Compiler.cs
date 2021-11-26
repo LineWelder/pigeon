@@ -57,10 +57,10 @@ namespace CompilerLibrary.Compiling
         }
 
         /// <summary>
-        /// Compiles a function
+        /// Adds a function to the declared functions list
         /// </summary>
-        /// <param name="function">The function to compile</param>
-        public void CompileFunction(FunctionDeclarationNode function)
+        /// <param name="function">The function to register</param>
+        public void RegisterFunction(FunctionDeclarationNode function)
         {
             FunctionArgument[] arguments = new FunctionArgument[function.ArgumentList.Length];
             for (int i = 0; i < function.ArgumentList.Length; i++)
@@ -80,7 +80,7 @@ namespace CompilerLibrary.Compiling
                 assemblySymbol,
                 function.ReturnType is null ? null : GetCompiledType(function.ReturnType),
                 arguments,
-                "\tnop\n"
+                function.Body
             ));
         }
 
@@ -128,7 +128,7 @@ namespace CompilerLibrary.Compiling
                         break;
 
                     case FunctionDeclarationNode function:
-                        CompileFunction(function);
+                        RegisterFunction(function);
                         break;
 
                     default:
@@ -163,7 +163,7 @@ section '.text' readable executable
             foreach (var pair in functions)
             {
                 builder.AppendFormat("{0}:\n", pair.Key);
-                builder.Append(pair.Value.AssemblyCode);
+                builder.Append("\tnop\n");
             }
 
             builder.Append("\n\nsection '.data' readable writable\n\n");

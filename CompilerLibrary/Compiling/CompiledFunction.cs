@@ -1,4 +1,6 @@
-﻿namespace CompilerLibrary.Compiling
+﻿using CompilerLibrary.Parsing;
+
+namespace CompilerLibrary.Compiling
 {
     /// <summary>
     /// Represents a function argument
@@ -12,6 +14,6 @@
         Location SourceLocation,
         string AssemblySymbol,
         CompiledType? ReturnType, FunctionArgument[] Arguments,
-        string AssemblyCode
+        SyntaxNode[] Body
     );
 }

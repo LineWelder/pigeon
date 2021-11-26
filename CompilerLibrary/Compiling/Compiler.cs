@@ -13,7 +13,7 @@ public class Compiler
 {
     private static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
     {
-        { "i32",  new CompiledType(Size: 4, Declaration: "dd", Abbreviation: 'i', IsSigned: true) }
+        { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) }
     };
 
     public readonly Dictionary<string, CompiledVariable> variables = new();
@@ -178,7 +178,21 @@ public class Compiler
     /// <param name="node">The statement to compile</param>
     private void CompileStatement(StringBuilder builder, SyntaxNode node)
     {
-        throw new System.NotImplementedException();
+        switch (node)
+        {
+            case AssignmentNode assignment:
+                Value left = CompileValue(builder, assignment.Left);
+                Value right = CompileValue(builder, assignment.Right);
+
+                if (!left.IsLValue)
+                    throw new NotLValueException(assignment.Left);
+
+                builder.Append($"\tmov\t{left}, {right}\n");
+                break;
+
+            default:
+                throw new UnexpectedSyntaxNodeException(node, "statement");
+        }
     }
 
     /// <summary>
@@ -188,7 +202,10 @@ public class Compiler
     /// <param name="function">The function to compile</param>
     private void CompileFunction(StringBuilder builder, CompiledFunction function)
     {
-        builder.Append("\tnop\n");
+        foreach (SyntaxNode node in function.Body)
+        {
+            CompileStatement(builder, node);
+        }
     }
 
     /// <summary>

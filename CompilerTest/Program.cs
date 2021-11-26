@@ -20,11 +20,19 @@ class Program
     static void Main(string[] args)
     {
         string code = @"
-i32 test = 43;
+i32 test = 0;
+i32 my_favorite_number = 30;
 fix()
 {
     test = 29;
-}";
+    my_favorite_number = 29;
+}
+
+set_test()
+{
+    test = 7;
+}
+";
 
         byte[] byteArray = Encoding.ASCII.GetBytes(code);
         MemoryStream stream = new(byteArray);

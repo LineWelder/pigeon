@@ -141,6 +141,29 @@ public class Compiler
             case IntegerNode integer:
                 return new IntegerValue(COMPILED_TYPES["i32"], integer.Value);
 
+            case BinaryNode binary:
+                Value left = CompileValue(binary.Left);
+                Value right = CompileValue(binary.Right);
+
+                if (left is not RegisterValue)
+                {
+                    RegisterValue accumulator = registerManager.AllocateRegister(binary);
+                    assemblyGenerator.EmitInstruction("mov", accumulator.ToString(), left.ToString());
+                    left = accumulator;
+                }
+
+                assemblyGenerator.EmitInstruction(
+                    binary.Operation switch
+                    {
+                        BinaryNodeOperation.Addition    => "add",
+                        BinaryNodeOperation.Subtraction => "sub",
+                        _ => throw new System.NotImplementedException()
+                    },
+                    left.ToString(), right.ToString()
+                );
+
+                return left;
+
             default:
                 throw new UnexpectedSyntaxNodeException(node, "expression");
         }
@@ -162,7 +185,7 @@ public class Compiler
                     throw new NotLValueException(assignment.Left);
 
                 // We cannot transfer data from a variable to another directly
-                if (right is SymbolValue value && left is not RegisterValue)
+                if (right is SymbolValue && left is not RegisterValue)
                 {
                     RegisterValue transferRegister = registerManager.AllocateRegister(assignment);
                     assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), right.ToString());

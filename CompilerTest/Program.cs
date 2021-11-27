@@ -21,16 +21,11 @@ class Program
     {
         string code = @"
 i32 test = 0;
-i32 my_favorite_number = 30;
-fix()
-{
-    test = 29;
-    my_favorite_number = 29;
-}
+i32 three = 3;
 
 set_test()
 {
-    test = my_favorite_number;
+    test = 3 + (three + 1);
 }
 ";
 

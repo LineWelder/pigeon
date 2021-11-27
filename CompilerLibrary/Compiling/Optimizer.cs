@@ -65,7 +65,7 @@ public static class Optimizer
     {
         if (node is BinaryNode binary)
         {
-            SyntaxNode leftOptimized  = OptimizeExpression(binary.Left);
+            SyntaxNode leftOptimized = OptimizeExpression(binary.Left);
             SyntaxNode rightOptimized = OptimizeExpression(binary.Right);
 
             if (leftOptimized is IntegerNode { Value: long leftValue }
@@ -85,6 +85,20 @@ public static class Optimizer
             }
             else
             {
+                if (binary.Operation is BinaryNodeOperation.Multiplication)
+                {
+                    if (leftOptimized is IntegerNode { Value: 1 })
+                        return rightOptimized;
+
+                    else if (rightOptimized is IntegerNode { Value: 1 })
+                        return leftOptimized;
+                }
+                else if (binary.Operation is BinaryNodeOperation.Divizion)
+                {
+                    if (rightOptimized is IntegerNode { Value: 1 })
+                        return leftOptimized;
+                }
+
                 return binary with
                 {
                     Left = leftOptimized,

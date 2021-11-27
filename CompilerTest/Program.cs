@@ -21,11 +21,10 @@ class Program
     {
         string code = @"
 i32 test = 0;
-i32 three = 3;
 
-set_test()
+main()
 {
-    test = test + 2 + 3 - (three - 6 - test);
+    test = 2 - test;
 }
 ";
 

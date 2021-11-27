@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using CompilerLibrary.Parsing;
 
@@ -19,68 +20,55 @@ public static class Optimizer
     /// <param name="firstOperation">The operation used for the first mononom</param>
     /// <param name="flipOperations">If true, flips all the operations</param>
     private static void AddToThePolynom(
-        List<Mononom> polynom, SyntaxNode syntaxNode,
-        BinaryNodeOperation firstOperation, bool flipOperations
+        List<Mononom> polynom, SyntaxNode syntaxNode, bool flipOperations
     )
     {
         if (syntaxNode is BinaryNode binary
          && binary.Operation is BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction)
         {
-            BinaryNodeOperation operation = binary.Operation;
-            if (flipOperations)
-            {
-                operation = 1 - operation;
-            }
-
-            AddToThePolynom(polynom, binary.Left, firstOperation, flipOperations);
             AddToThePolynom(
-                polynom, binary.Right, operation,
-                Xor(flipOperations, operation is BinaryNodeOperation.Subtraction)
+                polynom, binary.Left,
+                flipOperations
+            );
+            AddToThePolynom(
+                polynom, binary.Right,
+                Xor(flipOperations, binary.Operation is BinaryNodeOperation.Subtraction)
             );
         }
         else
         {
-            polynom.Add(new Mononom(firstOperation, syntaxNode));
+            polynom.Add(
+                new Mononom(
+                    flipOperations ? BinaryNodeOperation.Subtraction : BinaryNodeOperation.Addition,
+                    syntaxNode
+                )
+            );
         }
     }
 
     /// <summary>
     /// Takes a syntax node and returns a list of values packed with
-    /// the operation they used with. The first value's operation doesn't
-    /// mean anything
-    /// add(sub(1, 2), 3) => { { ?, 1 }, { sub, 2 }, { add, 3 } }
+    /// the operation they used with
+    /// add(sub(1, 2), 3) => { { add, 1 }, { sub, 2 }, { add, 3 } }
     /// </summary>
     /// <param name="syntaxNode">The node to split</param>
-    /// <returns></returns>
     private static List<Mononom> SplitIntoPolynom(SyntaxNode syntaxNode)
     {
         List<Mononom> result = new();
-        AddToThePolynom(result, syntaxNode, 0, false);
+        AddToThePolynom(result, syntaxNode, false);
         return result;
     }
 
     /// <summary>
-    /// Converts a polynom back into a syntax node
-    /// </summary>
-    /// <param name="polynom">The polynom to convert</param>
-    private static SyntaxNode ConvertIntoSyntaxNode(Span<Mononom> polynom)
-        => polynom.Length > 1
-            ? new BinaryNode(
-                polynom[0].Value.Location,
-                polynom[^1].Operation,
-                Left: ConvertIntoSyntaxNode(polynom[..^1]),
-                Right: polynom[^1].Value
-            )
-            : polynom[0].Value;
-
-    /// <summary>
     /// Optimizes the given expression
     /// </summary>
-    /// <param name="syntaxNode">The expression to optimize</param>
+    /// <param name="node">The expression to optimize</param>
     /// <returns>The optimized expression</returns>
-    public static SyntaxNode OptimizeExpression(SyntaxNode syntaxNode)
+    public static SyntaxNode OptimizeExpression(SyntaxNode node)
     {
-        List<Mononom> polynom = SplitIntoPolynom(syntaxNode);
+        List<Mononom> polynom = SplitIntoPolynom(node);
+
+        // Sum up all the constants
 
         long constant = 0;
         for (int i = polynom.Count - 1; i >= 0; i--)
@@ -105,14 +93,36 @@ public static class Optimizer
             polynom.RemoveAt(i);
         }
 
-        if (constant != 0)
+        // Convert the polynome back to SyntaxNode
+
+        int firstMononomIndex = polynom.FindIndex(x => x.Operation is BinaryNodeOperation.Addition);
+        SyntaxNode result = firstMononomIndex >= 0
+            ? polynom[firstMononomIndex].Value
+            : new IntegerNode(node.Location, constant);
+
+        for (int i = 0; i < polynom.Count; i++)
         {
-            polynom.Add(new Mononom(
-                constant < 0 ? BinaryNodeOperation.Subtraction : BinaryNodeOperation.Addition,
-                new IntegerNode(syntaxNode.Location, Math.Abs(constant))
-            ));
+            if (i == firstMononomIndex)
+                continue;
+
+            result = new BinaryNode(
+                result.Location,
+                polynom[i].Operation,
+                Left: result,
+                Right: polynom[i].Value
+            );
         }
 
-        return ConvertIntoSyntaxNode(polynom.ToArray().AsSpan());
+        if (constant != 0 && firstMononomIndex >= 0)
+        {
+            result = new BinaryNode(
+                result.Location,
+                constant > 0 ? BinaryNodeOperation.Addition : BinaryNodeOperation.Subtraction,
+                Left: result,
+                Right: new IntegerNode(node.Location, Math.Abs(constant))
+            );
+        }
+
+        return result;
     }
 }

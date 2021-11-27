@@ -68,6 +68,7 @@ public static class Optimizer
             SyntaxNode leftOptimized = OptimizeExpression(binary.Left);
             SyntaxNode rightOptimized = OptimizeExpression(binary.Right);
 
+            // If we can compute the result
             if (leftOptimized is IntegerNode { Value: long leftValue }
              && rightOptimized is IntegerNode { Value: long rightValue })
             {
@@ -83,22 +84,49 @@ public static class Optimizer
                     }
                 );
             }
+            // Check "a * 1 = a, a * 0 = 0, etc." optimizations
             else
             {
                 if (binary.Operation is BinaryNodeOperation.Multiplication)
                 {
-                    if (leftOptimized is IntegerNode { Value: 1 })
-                        return rightOptimized;
+                    long integerOperand;
+                    SyntaxNode otherOperand;
 
-                    else if (rightOptimized is IntegerNode { Value: 1 })
-                        return leftOptimized;
+                    if (leftOptimized is IntegerNode { Value: long leftIntegerOperand })
+                    {
+                        integerOperand = leftIntegerOperand;
+                        otherOperand = rightOptimized;
+                    }
+
+                    else if (rightOptimized is IntegerNode { Value: long rightIntegerOperand })
+                    {
+                        integerOperand = rightIntegerOperand;
+                        otherOperand = leftOptimized;
+                    }
+                    else
+                    {
+                        goto noOptimizations;
+                    }
+
+                    switch (integerOperand)
+                    {
+                        case 0:
+                            return new IntegerNode(node.Location, 0);
+
+                        case 1:
+                            return otherOperand;
+                    }
                 }
                 else if (binary.Operation is BinaryNodeOperation.Divizion)
                 {
+                    if (leftOptimized is IntegerNode { Value: 0 })
+                        return new IntegerNode(node.Location, 0);
+
                     if (rightOptimized is IntegerNode { Value: 1 })
                         return leftOptimized;
                 }
 
+            noOptimizations:
                 return binary with
                 {
                     Left = leftOptimized,

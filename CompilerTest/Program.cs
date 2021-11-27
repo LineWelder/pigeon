@@ -10,6 +10,7 @@ using CompilerLibrary.Tokenizing;
 //  TODO:
 // * Make pretty ToString method for syntax nodes
 // * Make UnexpectedSyntaxNodeException write the unexpected node
+// * Implement multiplication and division
 // * Merge CompiledVariable, CompiledFunction and SymbolValue
 // ====================================
 
@@ -24,7 +25,7 @@ i32 test = 0;
 
 main()
 {
-    test = 3 + 2 * 4 + test + 2;
+    test = (3 - 3) / test;
 }
 ";
 

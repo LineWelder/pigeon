@@ -65,74 +65,80 @@ public class Parser
     }
 
     /// <summary>
-    /// Parses an expression
+    /// Parses an integer, an identifier or an expression in parentheses
     /// </summary>
     /// <returns>The parsed node</returns>
-    private SyntaxNode ParseExpression()
+    private SyntaxNode ParsePrimaryExpression()
     {
-        SyntaxNode primaryExpression;
-
         Token firstToken = tokenizer.CurrentToken;
         tokenizer.NextToken();
 
         switch (firstToken)
         {
             case StringToken { Type: TokenType.Identifier } identifier:
-                primaryExpression = new IdentifierNode(identifier.Location, identifier.Value);
-                break;
+                return new IdentifierNode(identifier.Location, identifier.Value);
 
             case IntegerToken { Type: TokenType.IntegerLiteral } integer:
-                primaryExpression = new IntegerNode(integer.Location, integer.Value);
-                break;
+                return new IntegerNode(integer.Location, integer.Value);
 
             case { Type: TokenType.LeftParenthesis }:
-                primaryExpression = ParseExpression();
+                SyntaxNode result = ParseExpression();
                 Consume(TokenType.RightParenthesis, ")");
-                break;
+                return result;
 
             default:
                 throw new UnexpectedTokenException(firstToken, "expression");
         }
+    }
 
-        if (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out var operationType))
+    /// <summary>
+    /// Inserts the operation into the node as if it was written
+    /// just after it without any parentheses
+    /// InserOperation("2 + 3", '/', "4") -> "2 + 3 / 4" -> "2 + (3 / 4)"
+    /// </summary>
+    /// <param name="node">The node to insert into</param>
+    /// <param name="operation">The operation to insert</param>
+    /// <param name="right">The right operand of the operation</param>
+    /// <returns></returns>
+    private SyntaxNode InsertOperation(
+        SyntaxNode node, BinaryNodeOperation operation, SyntaxNode right
+    )
+    {
+        if (node is BinaryNode binary
+             && BINARY_OPERATION_PRIORITIES[binary.Operation]
+                    < BINARY_OPERATION_PRIORITIES[operation])
         {
-            tokenizer.NextToken();
-            bool rightExpressionIsInParentheses = tokenizer.CurrentToken.Type is TokenType.LeftParenthesis;
-
-            SyntaxNode rightExpression = ParseExpression();
-
-            // By default the expression will be returned right-to-left, but
-            // if the right operation is not more prior than the current
-            // then we need to make the right operation the parent one
-            // op(a, op(b, c)) -> op(op(a, b), c)
-            if (!rightExpressionIsInParentheses
-                && rightExpression is BinaryNode rightExpressionBinary
-                && BINARY_OPERATION_PRIORITIES[rightExpressionBinary.Operation]
-                        <= BINARY_OPERATION_PRIORITIES[operationType])
+            return binary with
             {
-                return new BinaryNode(
-                    primaryExpression.Location,
-                    rightExpressionBinary.Operation,
-                    Left: new BinaryNode(
-                        primaryExpression.Location,
-                        operationType,
-                        primaryExpression,
-                        rightExpressionBinary.Left
-                    ),
-                    Right: rightExpressionBinary.Right
-                );
-            }
-
+                Right = InsertOperation(binary.Right, operation, right)
+            };
+        }
+        else
+        {
             return new BinaryNode(
-                primaryExpression.Location,
-                operationType,
-                Left: primaryExpression,
-                Right: rightExpression
+                node.Location,
+                operation,
+                Left: node,
+                Right: right
             );
         }
+    }
 
-        // If there is no operator
-        return primaryExpression;
+    /// <summary>
+    /// Parses an expression
+    /// </summary>
+    /// <returns>The parsed node</returns>
+    private SyntaxNode ParseExpression()
+    {
+        SyntaxNode result = ParsePrimaryExpression();
+
+        while (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out BinaryNodeOperation operation))
+        {
+            tokenizer.NextToken();
+            result = InsertOperation(result, operation, ParsePrimaryExpression());
+        }
+
+        return result;
     }
 
     /// <summary>

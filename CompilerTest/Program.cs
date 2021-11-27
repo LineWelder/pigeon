@@ -24,7 +24,7 @@ i32 test = 0;
 
 main()
 {
-    test = (test / 1 + 3) * 1;
+    test = 3 + 2 * 4 + test + 2;
 }
 ";
 

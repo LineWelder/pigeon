@@ -18,6 +18,7 @@ public class Compiler
     private readonly Dictionary<string, CompiledFunction> functions = new();
 
     private AssemblyGenerator assemblyGenerator;
+    private RegisterManager registerManager;
 
     public Compiler() { }
 
@@ -145,17 +146,6 @@ public class Compiler
         }
     }
 
-
-    /// <summary>
-    /// Emits the mov instruction for "left = right"
-    /// </summary>
-    /// <param name="left">The value to mov to</param>
-    /// <param name="right">The value</param>
-    private void CompileAssignment(Value left, Value right)
-    {
-        throw new System.NotImplementedException();
-    }
-
     /// <summary>
     /// Compiles a statement and appends the compiled assembly to the builder
     /// </summary>
@@ -170,6 +160,19 @@ public class Compiler
 
                 if (!left.IsLValue)
                     throw new NotLValueException(assignment.Left);
+
+                // We cannot transfer data from a variable to another directly
+                if (right is SymbolValue value && left is not RegisterValue)
+                {
+                    RegisterValue transferRegister = registerManager.AllocateRegister(assignment);
+                    assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), right.ToString());
+                    right = transferRegister;
+
+                    // In fact, we should free the register when
+                    // it is no longer used, but since we don't allocate
+                    // any more registers, we can do it a bit earlier
+                    registerManager.FreeRegister(transferRegister);
+                }
 
                 assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
                 break;
@@ -198,6 +201,7 @@ public class Compiler
     public string CompileAll()
     {
         assemblyGenerator = new AssemblyGenerator();
+        registerManager = new RegisterManager();
 
         foreach (var pair in variables)
         {

@@ -30,7 +30,7 @@ fix()
 
 set_test()
 {
-    test = 7;
+    test = my_favorite_number;
 }
 ";
 

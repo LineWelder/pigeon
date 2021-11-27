@@ -9,7 +9,7 @@ namespace CompilerLibrary.Compiling;
 /// </summary>
 public class Compiler
 {
-    private static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
+    internal static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
     {
         { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) }
     };
@@ -143,6 +143,17 @@ public class Compiler
             default:
                 throw new UnexpectedSyntaxNodeException(node, "expression");
         }
+    }
+
+
+    /// <summary>
+    /// Emits the mov instruction for "left = right"
+    /// </summary>
+    /// <param name="left">The value to mov to</param>
+    /// <param name="right">The value</param>
+    private void CompileAssignment(Value left, Value right)
+    {
+        throw new System.NotImplementedException();
     }
 
     /// <summary>

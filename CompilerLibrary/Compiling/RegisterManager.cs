@@ -61,9 +61,12 @@ internal class RegisterManager
     /// Marks the given register as free
     /// </summary>
     /// <param name="value">The register to free</param>
-    public void FreeRegister(RegisterValue value)
+    public void FreeRegister(Value value)
     {
-        int id = GetRegisterIdFromName(value.Name);
+        if (value is not RegisterValue register)
+            return;
+
+        int id = GetRegisterIdFromName(register.Name);
         allocated[id] = false;
     }
 }

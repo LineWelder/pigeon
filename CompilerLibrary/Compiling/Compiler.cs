@@ -162,6 +162,7 @@ public class Compiler
                     left.ToString(), right.ToString()
                 );
 
+                registerManager.FreeRegister(right);
                 return left;
 
             default:
@@ -190,14 +191,10 @@ public class Compiler
                     RegisterValue transferRegister = registerManager.AllocateRegister(assignment);
                     assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), right.ToString());
                     right = transferRegister;
-
-                    // In fact, we should free the register when
-                    // it is no longer used, but since we don't allocate
-                    // any more registers, we can do it a bit earlier
-                    registerManager.FreeRegister(transferRegister);
                 }
 
                 assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
+                registerManager.FreeRegister(right);
                 break;
 
             default:

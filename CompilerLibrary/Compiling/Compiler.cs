@@ -147,9 +147,16 @@ public class Compiler
 
                 if (left is not RegisterValue)
                 {
-                    RegisterValue accumulator = registerManager.AllocateRegister(binary);
-                    assemblyGenerator.EmitInstruction("mov", accumulator.ToString(), left.ToString());
-                    left = accumulator;
+                    if (right is RegisterValue && binary.Operation is BinaryNodeOperation.Addition)
+                    {
+                        (left, right) = (right, left);
+                    }
+                    else
+                    {
+                        RegisterValue accumulator = registerManager.AllocateRegister(binary);
+                        assemblyGenerator.EmitInstruction("mov", accumulator.ToString(), left.ToString());
+                        left = accumulator;
+                    }
                 }
 
                 assemblyGenerator.EmitInstruction(

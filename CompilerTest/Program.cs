@@ -25,7 +25,7 @@ i32 three = 3;
 
 set_test()
 {
-    test = 3 + (three + 1);
+    test = 3 + (test + 1);
 }
 ";
 

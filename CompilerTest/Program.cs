@@ -43,8 +43,8 @@ set_test()
         try
         {
             SyntaxNode[] nodes = parser.ParseFile();
-            compiler.CompileNodes(nodes);
-            Console.WriteLine(compiler.LinkAssembly());
+            compiler.RegisterNodes(nodes);
+            Console.WriteLine(compiler.CompileAll());
         }
         catch (CompilerException ex)
         {

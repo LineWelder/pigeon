@@ -22,7 +22,7 @@ public class Parser
         { BinaryNodeOperation.Addition, 0 },
         { BinaryNodeOperation.Subtraction, 0 },
         { BinaryNodeOperation.Multiplication, 1 },
-        { BinaryNodeOperation.Divizion, 1 }
+        { BinaryNodeOperation.Divizion, 2 }
     };
 
     private readonly Tokenizer tokenizer;
@@ -92,50 +92,30 @@ public class Parser
     }
 
     /// <summary>
-    /// Inserts the operation into the node as if it was written
-    /// just after it without any parentheses
-    /// InserOperation("2 + 3", '/', "4") -> "2 + 3 / 4" -> "2 + (3 / 4)"
+    /// Parses an expression, but stops when meets an operator with
+    /// priority less than depth
     /// </summary>
-    /// <param name="node">The node to insert into</param>
-    /// <param name="operation">The operation to insert</param>
-    /// <param name="right">The right operand of the operation</param>
-    /// <returns></returns>
-    private SyntaxNode InsertOperation(
-        SyntaxNode node, BinaryNodeOperation operation, SyntaxNode right
-    )
-    {
-        if (node is BinaryNode binary
-             && BINARY_OPERATION_PRIORITIES[binary.Operation]
-                    < BINARY_OPERATION_PRIORITIES[operation])
-        {
-            return binary with
-            {
-                Right = InsertOperation(binary.Right, operation, right)
-            };
-        }
-        else
-        {
-            return new BinaryNode(
-                node.Location,
-                operation,
-                Left: node,
-                Right: right
-            );
-        }
-    }
-
-    /// <summary>
-    /// Parses an expression
-    /// </summary>
+    /// <param name="depth">Minimal operator priority</param>
     /// <returns>The parsed node</returns>
-    private SyntaxNode ParseExpression()
+    private SyntaxNode ParseExpression(int depth = 0)
     {
-        SyntaxNode result = ParsePrimaryExpression();
+        if (depth > 2)
+            return ParsePrimaryExpression();
 
-        while (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out BinaryNodeOperation operation))
+        SyntaxNode result = ParseExpression(depth + 1);
+        
+        while (BINARY_OPERATIONS.TryGetValue(tokenizer.CurrentToken.Type, out BinaryNodeOperation operation)
+            && BINARY_OPERATION_PRIORITIES[operation] == depth)
         {
             tokenizer.NextToken();
-            result = InsertOperation(result, operation, ParsePrimaryExpression());
+            SyntaxNode next = ParseExpression(depth + 1);
+
+            result = new BinaryNode(
+                result.Location,
+                operation,
+                Left: result,
+                Right: next
+            );
         }
 
         return result;

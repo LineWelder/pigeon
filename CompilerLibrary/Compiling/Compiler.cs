@@ -186,10 +186,10 @@ public class Compiler
         switch (node)
         {
             case AssignmentNode assignment:
-                Value left = CompileValue(Optimizer.OptimizeExpression(assignment.Left));
+                Value left = CompileValue(assignment.Left);
                 Value right = CompileValue(Optimizer.OptimizeExpression(assignment.Right));
 
-                if (!left.IsLValue)
+                if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);
 
                 // We cannot transfer data from a variable to another directly

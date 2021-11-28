@@ -136,18 +136,13 @@ public static class Optimizer
     }
 
     /// <summary>
-    /// Optimizes the given expression
+    /// Optimized the given binary expression
     /// </summary>
     /// <param name="node">The expression to optimize</param>
     /// <returns>The optimized expression</returns>
-    public static SyntaxNode OptimizeExpression(SyntaxNode node)
+    private static SyntaxNode OptimizePolynom(BinaryNode node)
     {
-        if (node is not BinaryNode binary)
-        {
-            return node;
-        }
-
-        if (binary.Operation is not (BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction))
+        if (node.Operation is not (BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction))
         {
             return ComputeExpression(node);
         }
@@ -211,4 +206,17 @@ public static class Optimizer
 
         return result;
     }
+
+    /// <summary>
+    /// Optimizes the given expression
+    /// </summary>
+    /// <param name="node">The expression to optimize</param>
+    /// <returns>The optimized expression</returns>
+    public static SyntaxNode OptimizeExpression(SyntaxNode node)
+        => node switch
+        {
+            TypeCastNode typeCast => typeCast with { Value = OptimizeExpression(typeCast.Value) },
+            BinaryNode   binary   => OptimizePolynom(binary),
+            _                     => node
+        };
 }

@@ -8,9 +8,6 @@ public static class Optimizer
 {
     private record struct Mononom(BinaryNodeOperation Operation, SyntaxNode Value);
 
-    private static bool Xor(bool a, bool b)
-        => a && !b || !a && b;
-
     /// <summary>
     /// Splits the syntax node into mononoms and adds them to the list
     /// </summary>
@@ -30,7 +27,7 @@ public static class Optimizer
             );
             AddToThePolynom(
                 polynom, binary.Right,
-                Xor(flipOperations, binary.Operation is BinaryNodeOperation.Subtraction)
+                flipOperations != (binary.Operation is BinaryNodeOperation.Subtraction)
             );
         }
         else

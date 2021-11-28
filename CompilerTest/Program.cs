@@ -21,8 +21,8 @@ class Program
     static void Main(string[] args)
     {
         string code = @"
-i64 dword = 30;
-i32 word = 29;
+i32 dword = 30;
+i16 word  = 29;
 
 main()
 {

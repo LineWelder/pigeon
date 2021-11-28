@@ -154,7 +154,7 @@ public class Compiler
                     }
                     else
                     {
-                        RegisterValue accumulator = registerManager.AllocateRegister(binary);
+                        RegisterValue accumulator = registerManager.AllocateRegister(binary, left.Type);
                         assemblyGenerator.EmitInstruction("mov", accumulator.ToString(), left.ToString());
                         left = accumulator;
                     }
@@ -196,7 +196,7 @@ public class Compiler
                 // We cannot transfer data from a variable to another directly
                 if (right is SymbolValue && left is not RegisterValue)
                 {
-                    RegisterValue transferRegister = registerManager.AllocateRegister(assignment);
+                    RegisterValue transferRegister = registerManager.AllocateRegister(assignment, right.Type);
                     assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), right.ToString());
                     right = transferRegister;
                 }

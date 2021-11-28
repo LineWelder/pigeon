@@ -36,7 +36,7 @@ internal class RegisterManager
     public static int GetRegisterIdFromName(string name)
     {
         int id = name[ name[0] is 'e' ? 1 : 0 ] - 'a';
-        if (id is < 0 or > 3 || name[^1] is not 'x')
+        if (id is < 0 or > 3)
             throw new ArgumentException($"{name} is not a register", nameof(name));
 
         return id;

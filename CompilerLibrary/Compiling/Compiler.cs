@@ -13,7 +13,8 @@ public class Compiler
     internal static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
     {
         { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) },
-        { "i16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) }
+        { "i16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) },
+        { "i8",  new CompiledType(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: true) },
     };
 
     private readonly Dictionary<string, CompiledVariable> variables = new();
@@ -124,6 +125,37 @@ public class Compiler
     }
 
     /// <summary>
+    /// Converts an IntegerValue into another type
+    /// </summary>
+    /// <param name="node">The syntax node the conversion happens within,
+    /// used for exception throwing</param>
+    /// <param name="value">The value to convert</param>
+    /// <param name="type">The type to convert into</param>
+    /// <returns>The converted integer value</returns>
+    private static IntegerValue ConvertIntegerValue(SyntaxNode node, IntegerValue value, CompiledType type)
+    {
+        if (value.Type.IsSigned != type.IsSigned && value.Value < 0)
+        {
+            throw new InvalidTypeCastException(
+                node.Location,
+                value.Type.Name, type.Name,
+                "cannot change type's signedness"
+            );
+        }
+
+        if (value.Value > type.MaximumValue || value.Value < type.MinimumValue)
+        {
+            throw new InvalidTypeCastException(
+                node.Location,
+                value.Type.Name, type.Name,
+                "possible value loss"
+            );
+        }
+
+        return new IntegerValue(type, value.Value);
+    }
+
+    /// <summary>
     /// Generates data transfer from the source to the destination
     /// </summary>
     /// <param name="node">The syntax node the transfer happens within,
@@ -140,7 +172,13 @@ public class Compiler
             right = transferRegister;
         }
 
-        if (left.Type.Size == right.Type.Size)
+        if (right is IntegerValue integerValue)
+        {
+            assemblyGenerator.EmitInstruction(
+                "mov", left.ToString(), ConvertIntegerValue(node, integerValue, left.Type).ToString()
+            );
+        }
+        else if (left.Type.Size == right.Type.Size)
         {
             assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
         }
@@ -183,27 +221,9 @@ public class Compiler
             return value;
         }
 
-        if (value is IntegerValue { Value: long integerValue })
+        if (value is IntegerValue integerValue)
         {
-            if (value.Type.IsSigned != type.IsSigned && integerValue < 0)
-            {
-                throw new InvalidTypeCastException(
-                    node.Location,
-                    value.Type.Name, type.Name,
-                    "cannot change type's signedness"
-                );
-            }
-
-            if (integerValue > type.MaximumValue || integerValue < type.MinimumValue)
-            {
-                throw new InvalidTypeCastException(
-                    node.Location,
-                    value.Type.Name, type.Name,
-                    "possible value loss"
-                );
-            }
-
-            return new IntegerValue(type, integerValue);
+            return ConvertIntegerValue(node, integerValue, type);
         }
 
         if (value.Type.IsSigned != type.IsSigned)
@@ -252,7 +272,7 @@ public class Compiler
     /// </summary>
     /// <param name="node">The expression to compile</param>
     /// <returns>Value representing the result of the expression</returns>
-    private Value CompileValue(SyntaxNode node)
+    private Value CompileValue(SyntaxNode node, CompiledType targetType = null)
     {
         switch (node)
         {
@@ -276,8 +296,8 @@ public class Compiler
                 return new IntegerValue(type, integer.Value);
 
             case BinaryNode binary:
-                Value left = CompileValue(binary.Left);
-                Value right = CompileValue(binary.Right);
+                Value left = CompileValue(binary.Left, targetType);
+                Value right = CompileValue(binary.Right, targetType);
 
                 if (left.Type.IsSigned != right.Type.IsSigned)
                 {
@@ -288,8 +308,9 @@ public class Compiler
                     );
                 }
 
-                CompiledType resultType = left.Type.Size > right.Type.Size ?
-                    left.Type : right.Type;
+                CompiledType resultType = targetType
+                    ?? (left.Type.Size > right.Type.Size
+                        ? left.Type : right.Type);
 
                 if (left is not RegisterValue)
                 {
@@ -335,7 +356,7 @@ public class Compiler
         {
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
-                Value right = CompileValue(Optimizer.OptimizeExpression(assignment.Right));
+                Value right = CompileValue(assignment.Right, left.Type);
 
                 if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);

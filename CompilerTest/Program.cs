@@ -23,10 +23,11 @@ class Program
         string code = @"
 i32 dword = 30;
 i16 word  = 29;
+i8  byte  = 8;
 
 main()
 {
-    dword = word + dword + 3;
+    dword = 2 + byte + word;
 }
 ";
 

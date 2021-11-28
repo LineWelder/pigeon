@@ -8,9 +8,13 @@ using CompilerLibrary.Tokenizing;
 
 // ====================================
 //  TODO:
-// * Make pretty ToString method for syntax nodes
-// * Make UnexpectedSyntaxNodeException write the unexpected node
+// * Explicit type casts
+// * Function stack frames and register saving
+// * Return statements
+// * Function arguments
+// * Global initializations, _start and i32 main()
 // * Implement multiplication and division
+// * Function pointers
 // * Merge CompiledVariable, CompiledFunction and SymbolValue
 // ====================================
 
@@ -27,7 +31,7 @@ i8  byte  = 8;
 
 main()
 {
-    dword = 2 + byte + word;
+    dword = 0 - dword;
 }
 ";
 

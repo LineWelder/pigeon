@@ -9,7 +9,8 @@ public enum TokenType
     Plus, Minus, Star, Slash,
     LeftParenthesis, RightParenthesis,
     LeftCurlyBrace, RightCurlyBrace,
-    Coma, Semicolon
+    Coma, Semicolon,
+    Colon
 }
 
 /// <summary>

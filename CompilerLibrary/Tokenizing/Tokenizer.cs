@@ -10,7 +10,7 @@ namespace CompilerLibrary.Tokenizing;
 /// </summary>
 public class Tokenizer
 {
-    private readonly Dictionary<char, TokenType> SYMBOLS = new()
+    private static readonly Dictionary<char, TokenType> SYMBOLS = new()
     {
         { '=', TokenType.Equals },
         { '+', TokenType.Plus },
@@ -22,7 +22,8 @@ public class Tokenizer
         { '{', TokenType.LeftCurlyBrace },
         { '}', TokenType.RightCurlyBrace },
         { ',', TokenType.Coma },
-        { ';', TokenType.Semicolon }
+        { ';', TokenType.Semicolon },
+        { ':', TokenType.Colon }
     };
 
     /// <summary>

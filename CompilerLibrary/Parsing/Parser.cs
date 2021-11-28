@@ -22,7 +22,7 @@ public class Parser
         { BinaryNodeOperation.Addition, 0 },
         { BinaryNodeOperation.Subtraction, 0 },
         { BinaryNodeOperation.Multiplication, 1 },
-        { BinaryNodeOperation.Divizion, 2 }
+        { BinaryNodeOperation.Divizion, 1 }
     };
 
     private readonly Tokenizer tokenizer;
@@ -60,7 +60,7 @@ public class Parser
             StringToken { Type: TokenType.Identifier } identifier =>
                 new IdentifierNode(identifier.Location, identifier.Value),
 
-            _ => throw new UnexpectedTokenException(tokenizer.CurrentToken, "type")
+            _ => throw new UnexpectedTokenException(token, "type")
         };
     }
 
@@ -73,22 +73,36 @@ public class Parser
         Token firstToken = tokenizer.CurrentToken;
         tokenizer.NextToken();
 
+        SyntaxNode result;
         switch (firstToken)
         {
             case StringToken { Type: TokenType.Identifier } identifier:
-                return new IdentifierNode(identifier.Location, identifier.Value);
+                result = new IdentifierNode(identifier.Location, identifier.Value);
+                break;
 
             case IntegerToken { Type: TokenType.IntegerLiteral } integer:
-                return new IntegerNode(integer.Location, integer.Value);
+                result = new IntegerNode(integer.Location, integer.Value);
+                break;
 
             case { Type: TokenType.LeftParenthesis }:
-                SyntaxNode result = ParseExpression();
+                result = ParseExpression();
                 Consume(TokenType.RightParenthesis, ")");
-                return result;
+                break;
 
             default:
                 throw new UnexpectedTokenException(firstToken, "expression");
         }
+
+        if (tokenizer.CurrentToken.Type is TokenType.Colon)
+        {
+            tokenizer.NextToken();
+            return new TypeCastNode(
+                result.Location,
+                result, ParseType()
+            );
+        }
+
+        return result;
     }
 
     /// <summary>

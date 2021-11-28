@@ -62,6 +62,14 @@ public record BinaryNode(
 ) : SyntaxNode(Location);
 
 /// <summary>
+/// Represents an explicit type cast expression
+/// </summary>
+public record TypeCastNode(
+    Location Location,
+    SyntaxNode Value, SyntaxNode Type
+) : SyntaxNode(Location);
+
+/// <summary>
 /// Represents an assignment statement
 /// </summary>
 public record AssignmentNode(

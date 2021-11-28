@@ -11,25 +11,30 @@ public record CompiledType(
 )
 {
     /// <summary>
-    /// Represents the maximum value that can be stored in a variable of this type
+    /// Returns the value of length ones
     /// </summary>
-    public long MaximumValue
+    /// <param name="length">The amount of ones</param>
+    private static long Ones(uint length)
     {
-        get
-        {
-            if (Size == 0) return 0;
+        long temp = 0;
+        for (int i = 0; i < length; i++)
+            temp |= 1L << i;
 
-            int bitCount = (int)(8 * Size - (IsSigned ? 1 : 0));
-            long temp = 1;
-            for (int i = 0; i < bitCount; i++)
-                temp <<= 1;
-
-            return --temp;
-        }
+        return temp;
     }
+
+    /// <summary>
+    /// Returns the value of Size bytes filled with ones
+    /// </summary>
+    public long Mask => Ones(8 * Size);
 
     /// <summary>
     /// Represents the maximum value that can be stored in a variable of this type
     /// </summary>
-    public long MinimumValue => IsSigned ? -MaximumValue - 1 : 0; 
+    public long MaximumValue => Ones(8 * Size - (IsSigned ? 1u : 0u));
+
+    /// <summary>
+    /// Represents the maximum value that can be stored in a variable of this type
+    /// </summary>
+    public long MinimumValue => IsSigned ? -MaximumValue - 1 : 0;
 }

@@ -8,7 +8,7 @@ using CompilerLibrary.Tokenizing;
 
 // ====================================
 //  TODO:
-// > Explicit type casts
+// * Negation
 // * Explicit integer types
 // * Function stack frames and register saving
 // * Return statements
@@ -32,7 +32,7 @@ i8  byte  = 8;
 
 main()
 {
-    word = (121 + byte:i16):i8;
+    word = 255:i8;
 }
 ";
 

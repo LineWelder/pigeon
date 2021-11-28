@@ -213,9 +213,28 @@ public class Compiler
     /// used for exception throwing</param>
     /// <param name="value">The value to convert</param>
     /// <param name="type">The type to convert to</param>
+    /// <param name="explicitly">Whether the type cast is explicit</param>
     /// <returns>The location of the converted value</returns>
-    private Value GenerateTypeCast(SyntaxNode node, Value value, CompiledType type)
+    private Value GenerateTypeCast(
+        SyntaxNode node, Value value,
+        CompiledType type, bool explicitly = false)
     {
+        RegisterValue CutRegister(RegisterValue register, CompiledType type)
+        {
+            int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
+            string convertedRegister = RegisterManager.GetRegisterNameFromId(registerId, type);
+
+            long cutMask = (long)Math.Pow(2, type.Size * 8) - 1;
+            if (type.Size > register.Type.Size)
+            {
+                assemblyGenerator.EmitInstruction(
+                    "and", convertedRegister, cutMask.ToString()
+                );
+            }
+
+            return new RegisterValue(type, convertedRegister);
+        }
+
         if (value.Type == type)
         {
             return value;
@@ -237,24 +256,27 @@ public class Compiler
 
         if (value.Type.Size > type.Size)
         {
-            throw new InvalidTypeCastException(
-                node.Location,
-                value.Type.Name, type.Name,
-                "possible value loss"
-            );
+            if (!explicitly)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location,
+                    value.Type.Name, type.Name,
+                    "possible value loss"
+                );
+            }
+
+            return value switch
+            {
+                RegisterValue registerValue => CutRegister(registerValue, type),
+                SymbolValue                 => value with { Type = type },
+                _ => throw new ArgumentException("Unexpected value type"),
+            };
         }
 
         switch (value)
         {
-            case RegisterValue { Name: string registerName }:
-                int registerId = RegisterManager.GetRegisterIdFromName(registerName);
-                string convetedRegister = RegisterManager.GetRegisterNameFromId(registerId, type);
-
-                assemblyGenerator.EmitInstruction(
-                    "and", convetedRegister, (Math.Pow(2, type.Size) - 1).ToString()
-                );
-
-                return new RegisterValue(type, convetedRegister);
+            case RegisterValue registerValue:
+                return CutRegister(registerValue, type);
 
             default:
                 RegisterValue conversionRegister = registerManager.AllocateRegister(node, type);
@@ -294,6 +316,14 @@ public class Compiler
                     );
 
                 return new IntegerValue(type, integer.Value);
+
+            case TypeCastNode typeCast:
+                CompiledType castInto = GetCompiledType(typeCast.Type);
+                return GenerateTypeCast(
+                    typeCast,
+                    CompileValue(typeCast.Value, castInto),
+                    castInto, true
+                );
 
             case BinaryNode binary:
                 Value left = CompileValue(binary.Left, targetType);
@@ -356,7 +386,7 @@ public class Compiler
         {
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
-                Value right = CompileValue(assignment.Right, left.Type);
+                Value right = CompileValue(/*Optimizer.OptimizeExpression*/(assignment.Right), left.Type);
 
                 if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);

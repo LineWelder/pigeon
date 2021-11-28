@@ -9,6 +9,7 @@ using CompilerLibrary.Tokenizing;
 // ====================================
 //  TODO:
 // > Explicit type casts
+// * Explicit integer types
 // * Function stack frames and register saving
 // * Return statements
 // * Function arguments
@@ -31,7 +32,7 @@ i8  byte  = 8;
 
 main()
 {
-    word = dword:i32;
+    word = (121 + byte:i16):i8;
 }
 ";
 
@@ -44,6 +45,17 @@ main()
         try
         {
             SyntaxNode[] nodes = parser.ParseFile();
+
+            // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
+            // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
+            // SyntaxNode expression = assignment?.Right;
+            // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
+
+            // Debug.PrintSyntaxNode(expression);
+            // Console.WriteLine();
+            // Debug.PrintSyntaxNode(optimized);
+            // Console.WriteLine();
+
             compiler.RegisterNodes(nodes);
             Console.WriteLine(compiler.CompileAll());
         }

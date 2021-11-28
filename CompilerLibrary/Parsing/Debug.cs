@@ -74,6 +74,16 @@ public static class Debug
                 Console.Write(integer.Value);
                 break;
 
+            case TypeCastNode typeCast:
+                if (typeCast.Value is BinaryNode) Console.Write('(');
+                PrintSyntaxNode(typeCast.Value);
+                if (typeCast.Value is BinaryNode) Console.Write(')');
+
+                Console.Write(':');
+                PrintSyntaxNode(typeCast.Type);
+
+                break;
+
             case BinaryNode binary:
                 bool leftParentheses =
                     binary.Left is BinaryNode { Operation: BinaryNodeOperation leftOperation }

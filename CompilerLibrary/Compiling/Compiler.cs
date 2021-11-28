@@ -11,7 +11,8 @@ public class Compiler
 {
     internal static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
     {
-        { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) }
+        { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) },
+        { "i16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) }
     };
 
     private readonly Dictionary<string, CompiledVariable> variables = new();
@@ -82,7 +83,7 @@ public class Compiler
                 variable.Value.Location,
                 "bigger integer type",
                 variableType.ToString(),
-                $"the definition value must not be greater than {maximumValue}"
+                "possible value loss"
             );
 
         string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(variable.Identifier);
@@ -200,7 +201,33 @@ public class Compiler
                     right = transferRegister;
                 }
 
-                assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
+                if (left.Type.Size == right.Type.Size)
+                {
+                    assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
+                }
+                else if (left.Type.Size > right.Type.Size)
+                {
+                    if (left.Type.IsSigned != right.Type.IsSigned)
+                    {
+                        throw new InvalidTypeCastException(
+                            assignment.Location, right.Type.Name, left.Type.Name,
+                            "the types must be either both signed or unsigned"
+                        );
+                    }
+
+                    assemblyGenerator.EmitInstruction(
+                        left.Type.IsSigned ? "movsx" : "movzx",
+                        left.ToString(), right.ToString()
+                    );
+                }
+                else
+                {
+                    throw new InvalidTypeCastException(
+                        assignment.Location, right.Type.Name, left.Type.Name,
+                        "possible value loss"
+                    );
+                }
+
                 registerManager.FreeRegister(right);
                 break;
 

@@ -21,11 +21,12 @@ class Program
     static void Main(string[] args)
     {
         string code = @"
-i32 test = 0;
+i64 dword = 30;
+i32 word = 29;
 
 main()
 {
-    test = (3 - 3) / test;
+    dword = word;
 }
 ";
 

@@ -26,7 +26,7 @@ i16 word  = 29;
 
 main()
 {
-    dword = word;
+    dword = word + dword + 3;
 }
 ";
 

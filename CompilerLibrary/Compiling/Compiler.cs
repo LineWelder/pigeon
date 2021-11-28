@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CompilerLibrary.Compiling.Exceptions;
 using CompilerLibrary.Parsing;
 
@@ -123,6 +124,130 @@ public class Compiler
     }
 
     /// <summary>
+    /// Generates data transfer from the source to the destination
+    /// </summary>
+    /// <param name="node">The syntax node the transfer happens within,
+    /// used for exception throwing</param>
+    /// <param name="destination">The location to put data to</param>
+    /// <param name="source">The location to take data from</param>
+    private void GenerateMov(SyntaxNode node, Value left, Value right)
+    {
+        // We cannot transfer data from a variable to another directly
+        if (right is SymbolValue && left is not RegisterValue)
+        {
+            RegisterValue transferRegister = registerManager.AllocateRegister(node, right.Type);
+            assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), right.ToString());
+            right = transferRegister;
+        }
+
+        if (left.Type.Size == right.Type.Size)
+        {
+            assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
+        }
+        else if (left.Type.Size > right.Type.Size)
+        {
+            if (left.Type.IsSigned != right.Type.IsSigned)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location, right.Type.Name, left.Type.Name,
+                    "the types must be either both signed or unsigned"
+                );
+            }
+
+            assemblyGenerator.EmitInstruction(
+                left.Type.IsSigned ? "movsx" : "movzx",
+                left.ToString(), right.ToString()
+            );
+        }
+        else
+        {
+            throw new InvalidTypeCastException(
+                node.Location, right.Type.Name, left.Type.Name,
+                "possible value loss"
+            );
+        }
+    }
+
+    /// <summary>
+    /// Generates conversion of the value to the type
+    /// </summary>
+    /// <param name="node">The syntax node the conversion happens within,
+    /// used for exception throwing</param>
+    /// <param name="value">The value to convert</param>
+    /// <param name="type">The type to convert to</param>
+    /// <returns>The location of the converted value</returns>
+    private Value GenerateTypeCast(SyntaxNode node, Value value, CompiledType type)
+    {
+        if (value.Type == type)
+        {
+            return value;
+        }
+
+        if (value is IntegerValue { Value: long integerValue })
+        {
+            if (value.Type.IsSigned != type.IsSigned && integerValue < 0)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location,
+                    value.Type.Name, type.Name,
+                    "cannot change type's signedness"
+                );
+            }
+
+            if (integerValue > type.MaximumValue || integerValue < type.MinimumValue)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location,
+                    value.Type.Name, type.Name,
+                    "possible value loss"
+                );
+            }
+
+            return new IntegerValue(type, integerValue);
+        }
+
+        if (value.Type.IsSigned != type.IsSigned)
+        {
+            throw new InvalidTypeCastException(
+                node.Location,
+                value.Type.Name, type.Name,
+                "cannot change type's signedness"
+            );
+        }
+
+        if (value.Type.Size > type.Size)
+        {
+            throw new InvalidTypeCastException(
+                node.Location,
+                value.Type.Name, type.Name,
+                "possible value loss"
+            );
+        }
+
+        switch (value)
+        {
+            case RegisterValue { Name: string registerName }:
+                int registerId = RegisterManager.GetRegisterIdFromName(registerName);
+                string convetedRegister = RegisterManager.GetRegisterNameFromId(registerId, type);
+
+                assemblyGenerator.EmitInstruction(
+                    "and", convetedRegister, (Math.Pow(2, type.Size) - 1).ToString()
+                );
+
+                return new RegisterValue(type, convetedRegister);
+
+            default:
+                RegisterValue conversionRegister = registerManager.AllocateRegister(node, type);
+                assemblyGenerator.EmitInstruction(
+                    type.IsSigned ? "movsx" : "movzx",
+                    conversionRegister.ToString(), value.ToString()
+                );
+
+                return conversionRegister;
+        }
+    }
+
+    /// <summary>
     /// Compiels an expression and appends the compiled assembly to the builder
     /// </summary>
     /// <param name="node">The expression to compile</param>
@@ -141,7 +266,7 @@ public class Compiler
 
             case IntegerNode integer:
                 CompiledType type = COMPILED_TYPES["i32"];
-                if (integer.Value > type.MaximumValue)
+                if (integer.Value > type.MaximumValue || integer.Value < type.MinimumValue)
                     throw new InvalidTypeCastException(
                         integer.Location,
                         "bigger integer size", type.Name,
@@ -154,6 +279,18 @@ public class Compiler
                 Value left = CompileValue(binary.Left);
                 Value right = CompileValue(binary.Right);
 
+                if (left.Type.IsSigned != right.Type.IsSigned)
+                {
+                    throw new InvalidTypeCastException(
+                        binary.Location,
+                        right.Type.Name, left.Type.Name,
+                        "operand types must be either both signed or unsigned"
+                    );
+                }
+
+                CompiledType resultType = left.Type.Size > right.Type.Size ?
+                    left.Type : right.Type;
+
                 if (left is not RegisterValue)
                 {
                     if (right is RegisterValue && binary.Operation is BinaryNodeOperation.Addition)
@@ -162,11 +299,13 @@ public class Compiler
                     }
                     else
                     {
-                        RegisterValue accumulator = registerManager.AllocateRegister(binary, left.Type);
-                        assemblyGenerator.EmitInstruction("mov", accumulator.ToString(), left.ToString());
+                        RegisterValue accumulator = registerManager.AllocateRegister(binary, resultType);
+                        GenerateMov(binary, accumulator, left);
                         left = accumulator;
                     }
                 }
+
+                right = GenerateTypeCast(binary, right, resultType);
 
                 assemblyGenerator.EmitInstruction(
                     binary.Operation switch
@@ -201,40 +340,7 @@ public class Compiler
                 if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);
 
-                // We cannot transfer data from a variable to another directly
-                if (right is SymbolValue && left is not RegisterValue)
-                {
-                    RegisterValue transferRegister = registerManager.AllocateRegister(assignment, right.Type);
-                    assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), right.ToString());
-                    right = transferRegister;
-                }
-
-                if (left.Type.Size == right.Type.Size)
-                {
-                    assemblyGenerator.EmitInstruction("mov", left.ToString(), right.ToString());
-                }
-                else if (left.Type.Size > right.Type.Size)
-                {
-                    if (left.Type.IsSigned != right.Type.IsSigned)
-                    {
-                        throw new InvalidTypeCastException(
-                            assignment.Location, right.Type.Name, left.Type.Name,
-                            "the types must be either both signed or unsigned"
-                        );
-                    }
-
-                    assemblyGenerator.EmitInstruction(
-                        left.Type.IsSigned ? "movsx" : "movzx",
-                        left.ToString(), right.ToString()
-                    );
-                }
-                else
-                {
-                    throw new InvalidTypeCastException(
-                        assignment.Location, right.Type.Name, left.Type.Name,
-                        "possible value loss"
-                    );
-                }
+                GenerateMov(assignment, left, right);
 
                 registerManager.FreeRegister(right);
                 break;

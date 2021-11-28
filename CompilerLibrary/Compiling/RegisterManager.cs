@@ -14,7 +14,7 @@ internal class RegisterManager
     /// <summary>
     /// Returns the name of the register of the given size corresponding to the given id
     /// </summary>
-    private static string GetRegisterNameFromId(int id, CompiledType type)
+    public static string GetRegisterNameFromId(int id, CompiledType type)
     {
         if (id is < 0 or > 3)
             throw new ArgumentException($"{id} is not a register id", nameof(id));
@@ -33,7 +33,7 @@ internal class RegisterManager
     /// <summary>
     /// Returns the name of the register corresponding to the given id
     /// </summary>
-    private static int GetRegisterIdFromName(string name)
+    public static int GetRegisterIdFromName(string name)
     {
         int id = name[ name[0] is 'e' ? 1 : 0 ] - 'a';
         if (id is < 0 or > 3 || name[^1] is not 'x')

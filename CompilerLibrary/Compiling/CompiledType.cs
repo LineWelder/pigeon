@@ -27,4 +27,9 @@ public record CompiledType(
             return --temp;
         }
     }
+
+    /// <summary>
+    /// Represents the maximum value that can be stored in a variable of this type
+    /// </summary>
+    public long MinimumValue => IsSigned ? -MaximumValue - 1 : 0; 
 }

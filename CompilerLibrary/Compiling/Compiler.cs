@@ -140,7 +140,15 @@ public class Compiler
                 return new SymbolValue(variable.Type, variable.AssemblySymbol);
 
             case IntegerNode integer:
-                return new IntegerValue(COMPILED_TYPES["i32"], integer.Value);
+                CompiledType type = COMPILED_TYPES["i32"];
+                if (integer.Value > type.MaximumValue)
+                    throw new InvalidTypeCastException(
+                        integer.Location,
+                        "bigger integer size", type.Name,
+                        "possible value loss"
+                    );
+
+                return new IntegerValue(type, integer.Value);
 
             case BinaryNode binary:
                 Value left = CompileValue(binary.Left);

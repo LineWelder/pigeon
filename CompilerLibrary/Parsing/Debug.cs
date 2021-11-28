@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CompilerLibrary.Compiling;
+using System;
 using System.Collections.Generic;
 
 namespace CompilerLibrary.Parsing;
@@ -31,8 +32,12 @@ public static class Debug
         switch (node)
         {
             case FunctionDeclarationNode functionDeclaration:
-                PrintSyntaxNode(functionDeclaration.ReturnType);
-                Console.Write($" {functionDeclaration.Identifier}(");
+                if (functionDeclaration.ReturnType is not null)
+                {
+                    PrintSyntaxNode(functionDeclaration.ReturnType);
+                    Console.Write(' ');
+                }
+                Console.Write($"{functionDeclaration.Identifier}(");
 
                 for (int i = 0; i < functionDeclaration.ArgumentList.Length; i++)
                 {
@@ -70,11 +75,25 @@ public static class Debug
                 break;
 
             case BinaryNode binary:
-                Console.Write('(');
+                bool leftParentheses =
+                    binary.Left is BinaryNode { Operation: BinaryNodeOperation leftOperation }
+                 && Parser.BINARY_OPERATION_PRIORITIES[leftOperation]
+                        < Parser.BINARY_OPERATION_PRIORITIES[binary.Operation];
+
+                bool rightParentheses =
+                    binary.Right is BinaryNode { Operation: BinaryNodeOperation rightOperation }
+                 && Parser.BINARY_OPERATION_PRIORITIES[rightOperation]
+                        <= Parser.BINARY_OPERATION_PRIORITIES[binary.Operation];
+
+                if (leftParentheses) Console.Write('(');
                 PrintSyntaxNode(binary.Left);
+                if (leftParentheses) Console.Write(')');
+
                 Console.Write($" {BINARY_OPERATORS[binary.Operation]} ");
+
+                if (rightParentheses) Console.Write('(');
                 PrintSyntaxNode(binary.Right);
-                Console.Write(')');
+                if (rightParentheses) Console.Write(')');
 
                 break;
 

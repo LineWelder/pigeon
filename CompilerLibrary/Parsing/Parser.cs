@@ -9,7 +9,7 @@ namespace CompilerLibrary.Parsing;
 /// </summary>
 public class Parser
 {
-    private readonly Dictionary<TokenType, BinaryNodeOperation> BINARY_OPERATIONS = new()
+    private static readonly Dictionary<TokenType, BinaryNodeOperation> BINARY_OPERATIONS = new()
     {
         { TokenType.Plus, BinaryNodeOperation.Addition },
         { TokenType.Minus, BinaryNodeOperation.Subtraction },
@@ -17,7 +17,7 @@ public class Parser
         { TokenType.Slash, BinaryNodeOperation.Divizion }
     };
 
-    private readonly Dictionary<BinaryNodeOperation, int> BINARY_OPERATION_PRIORITIES = new()
+    internal static readonly Dictionary<BinaryNodeOperation, int> BINARY_OPERATION_PRIORITIES = new()
     {
         { BinaryNodeOperation.Addition, 0 },
         { BinaryNodeOperation.Subtraction, 0 },

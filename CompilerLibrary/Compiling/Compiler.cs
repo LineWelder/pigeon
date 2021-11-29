@@ -15,6 +15,9 @@ public class Compiler
         { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) },
         { "i16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) },
         { "i8",  new CompiledType(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: true) },
+        { "u32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: false) },
+        { "u16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: false) },
+        { "u8",  new CompiledType(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: false) }
     };
 
     private readonly Dictionary<string, CompiledVariable> variables = new();
@@ -321,7 +324,7 @@ public class Compiler
                 return new SymbolValue(variable.Type, variable.AssemblySymbol);
 
             case IntegerNode integer:
-                CompiledType type = COMPILED_TYPES["i32"];
+                CompiledType type = targetType;
                 if (integer.Value > type.MaximumValue || integer.Value < type.MinimumValue)
                     throw new InvalidTypeCastException(
                         integer.Location,
@@ -338,6 +341,28 @@ public class Compiler
                     CompileValue(typeCast.Value, castInto),
                     castInto, true
                 );
+
+            case NegationNode negation:
+                Value inner = CompileValue(negation.InnerExpression, targetType);
+
+                if (!inner.Type.IsSigned)
+                {
+                    throw new InvalidTypeCastException(
+                        negation.Location,
+                        inner.Type.Name, "a signed type",
+                        "cannot apply negation to an unsigned type"
+                    );
+                }
+
+                if (inner is not RegisterValue)
+                {
+                    RegisterValue resultRegister = registerManager.AllocateRegister(negation, inner.Type);
+                    GenerateMov(negation, resultRegister, inner);
+                    inner = resultRegister;
+                }
+
+                assemblyGenerator.EmitInstruction("neg", inner.ToString());
+                return inner;
 
             case BinaryNode binary:
                 Value left = CompileValue(binary.Left, targetType);
@@ -377,7 +402,7 @@ public class Compiler
                     {
                         BinaryNodeOperation.Addition    => "add",
                         BinaryNodeOperation.Subtraction => "sub",
-                        _ => throw new System.NotImplementedException()
+                        _ => throw new NotImplementedException()
                     },
                     left.ToString(), right.ToString()
                 );

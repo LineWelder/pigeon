@@ -3,7 +3,7 @@
 - Negation
 - Explicit integer literal types
 - Function stack frames and register saving
-- Return statements
+- Return statements and function calls
 - Function arguments
 - Local variables
 - Pointers

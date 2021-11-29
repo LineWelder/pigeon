@@ -100,9 +100,9 @@ public class Compiler
     }
 
     /// <summary>
-    /// Compiles the given nodes
+    /// Compiles the given declarations
     /// </summary>
-    public void RegisterNodes(SyntaxNode[] nodes)
+    public void RegisterDeclarations(SyntaxNode[] nodes)
     {
         foreach (SyntaxNode node in nodes)
         {

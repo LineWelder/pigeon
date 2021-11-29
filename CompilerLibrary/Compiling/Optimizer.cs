@@ -93,26 +93,33 @@ public static class Optimizer
     /// <param name="flipOperations">If true, flips all the operations</param>
     private static void AddToPolynom(List<Mononom> polynom, SyntaxNode node, bool flipOperations)
     {
-        if (node is BinaryNode { Operation: BinaryNodeOperation.Addition
-            or BinaryNodeOperation.Subtraction } binary)
+        switch (node)
         {
-            AddToPolynom(
-                polynom, binary.Left,
-                flipOperations
-            );
-            AddToPolynom(
-                polynom, binary.Right,
-                flipOperations != (binary.Operation is BinaryNodeOperation.Subtraction)
-            );
-        }
-        else
-        {
-            polynom.Add(
-                new Mononom(
-                    flipOperations ? BinaryNodeOperation.Subtraction : BinaryNodeOperation.Addition,
-                    OptimizeExpression(node)
-                )
-            );
+            case BinaryNode { Operation: BinaryNodeOperation.Addition
+                    or BinaryNodeOperation.Subtraction } binary:
+                AddToPolynom(
+                    polynom, binary.Left,
+                    flipOperations
+                );
+                AddToPolynom(
+                    polynom, binary.Right,
+                    flipOperations != binary.Operation is BinaryNodeOperation.Subtraction
+                );
+                break;
+
+            case NegationNode { InnerExpression: SyntaxNode inner }:
+                AddToPolynom(polynom, OptimizeExpression(inner), !flipOperations);
+                break;
+
+            default:
+                polynom.Add(
+                    new Mononom(
+                        flipOperations ? BinaryNodeOperation.Subtraction
+                                       : BinaryNodeOperation.Addition,
+                        OptimizeExpression(node)
+                    )
+                );
+                break;
         }
     }
 

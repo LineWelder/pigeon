@@ -62,6 +62,13 @@ public record BinaryNode(
 ) : SyntaxNode(Location);
 
 /// <summary>
+/// Represents a negation expression
+/// </summary>
+public record NegationNode(
+    Location Location, SyntaxNode InnerExpression
+) : SyntaxNode(Location);
+
+/// <summary>
 /// Represents an explicit type cast expression
 /// </summary>
 public record TypeCastNode(

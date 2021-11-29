@@ -19,7 +19,7 @@ i8  byte  = 8;
 
 main()
 {
-    word = 255:i8;
+    word = -1:u16;
 }
 ";
 
@@ -33,18 +33,18 @@ main()
         {
             SyntaxNode[] nodes = parser.ParseFile();
 
-            // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
-            // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
-            // SyntaxNode expression = assignment?.Right;
-            // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
+            FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
+            AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
+            SyntaxNode expression = assignment?.Right;
+            SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
 
-            // Debug.PrintSyntaxNode(expression);
-            // Console.WriteLine();
-            // Debug.PrintSyntaxNode(optimized);
-            // Console.WriteLine();
+            Debug.PrintSyntaxNode(expression);
+            Console.WriteLine();
+            Debug.PrintSyntaxNode(optimized);
+            Console.WriteLine();
 
-            compiler.RegisterNodes(nodes);
-            Console.WriteLine(compiler.CompileAll());
+            // compiler.RegisterNodes(nodes);
+            // Console.WriteLine(compiler.CompileAll());
         }
         catch (CompilerException ex)
         {

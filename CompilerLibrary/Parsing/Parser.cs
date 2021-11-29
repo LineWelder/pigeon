@@ -65,16 +65,23 @@ public class Parser
     }
 
     /// <summary>
-    /// Parses an integer, an identifier or an expression in parentheses
+    /// Parses an operand for binary operatios
     /// </summary>
     /// <returns>The parsed node</returns>
     private SyntaxNode ParsePrimaryExpression()
     {
-        Token firstToken = tokenizer.CurrentToken;
-        tokenizer.NextToken();
-
         SyntaxNode result;
-        switch (firstToken)
+        bool negate = false;
+
+        if (tokenizer.CurrentToken.Type is TokenType.Minus)
+        {
+            tokenizer.NextToken();
+            negate = true;
+        }
+
+        Token token = tokenizer.CurrentToken;
+        tokenizer.NextToken();
+        switch (token)
         {
             case StringToken { Type: TokenType.Identifier } identifier:
                 result = new IdentifierNode(identifier.Location, identifier.Value);
@@ -87,10 +94,19 @@ public class Parser
             case { Type: TokenType.LeftParenthesis }:
                 result = ParseExpression();
                 Consume(TokenType.RightParenthesis, ")");
+
                 break;
 
             default:
-                throw new UnexpectedTokenException(firstToken, "expression");
+                throw new UnexpectedTokenException(token, "a literal or an identifier");
+        }
+
+        if (negate)
+        {
+            result = new NegationNode(
+                tokenizer.CurrentToken.Location,
+                result
+            );
         }
 
         if (tokenizer.CurrentToken.Type is TokenType.Colon)

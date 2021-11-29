@@ -84,6 +84,14 @@ public static class Debug
 
                 break;
 
+            case NegationNode negation:
+                Console.Write('-');
+                if (negation.InnerExpression is not (IntegerNode or IdentifierNode)) Console.Write('(');
+                PrintSyntaxNode(negation.InnerExpression);
+                if (negation.InnerExpression is not (IntegerNode or IdentifierNode)) Console.Write(')');
+
+                break;
+
             case BinaryNode binary:
                 bool leftParentheses =
                     binary.Left is BinaryNode { Operation: BinaryNodeOperation leftOperation }

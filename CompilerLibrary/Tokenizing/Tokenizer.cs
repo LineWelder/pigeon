@@ -109,7 +109,6 @@ public class Tokenizer
     public void NextToken()
     {
         SkipWhiteSpaces();
-        TokenType tokenType;
         Location currentLocation = new(filePath, currentLine, currentColumn);
 
         // Identifier
@@ -155,7 +154,7 @@ public class Tokenizer
         }
 
         // Symbol
-        else if (SYMBOLS.TryGetValue(currentCharacter, out tokenType))
+        else if (SYMBOLS.TryGetValue(currentCharacter, out TokenType tokenType))
         {
             NextCharacter();
             CurrentToken = new Token(

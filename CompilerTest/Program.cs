@@ -19,7 +19,7 @@ i8  byte  = 8;
 
 main()
 {
-    word = -word;
+    word = word - -1 * 2;
 }
 ";
 

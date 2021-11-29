@@ -9,23 +9,98 @@ public static class Optimizer
     private record struct Mononom(BinaryNodeOperation Operation, SyntaxNode Value);
 
     /// <summary>
+    /// Optimizes the given multiplication or divizion
+    /// </summary>
+    /// <param name="node">The expression to compute</param>
+    private static SyntaxNode OptimizeMononom(BinaryNode node)
+    {
+        SyntaxNode leftOptimized = OptimizeExpression(node.Left);
+        SyntaxNode rightOptimized = OptimizeExpression(node.Right);
+
+        // If we can compute the result
+        if (leftOptimized is IntegerNode { Value: long leftValue }
+            && rightOptimized is IntegerNode { Value: long rightValue })
+        {
+            return new IntegerNode(
+                node.Location,
+                node.Operation switch
+                {
+                    BinaryNodeOperation.Multiplication => leftValue * rightValue,
+                    BinaryNodeOperation.Divizion       => leftValue / rightValue,
+                    _ => throw new ArgumentException("Invalid binary operation")
+                }
+            );
+        }
+
+        // Check "a * 1 = a, a * 0 = 0, etc." optimizations
+        switch (node.Operation)
+        {
+            case BinaryNodeOperation.Multiplication:
+                long integerOperand;
+                SyntaxNode otherOperand;
+
+                if (leftOptimized is IntegerNode { Value: long leftIntegerOperand })
+                {
+                    integerOperand = leftIntegerOperand;
+                    otherOperand = rightOptimized;
+                }
+                else if (rightOptimized is IntegerNode { Value: long rightIntegerOperand })
+                {
+                    integerOperand = rightIntegerOperand;
+                    otherOperand = leftOptimized;
+                }
+                else
+                {
+                    goto default;
+                }
+
+                switch (integerOperand)
+                {
+                    case 0:
+                        return new IntegerNode(node.Location, 0);
+
+                    case 1:
+                        return otherOperand;
+                }
+                break;
+
+            case BinaryNodeOperation.Divizion:
+                if (leftOptimized is IntegerNode { Value: 0 })
+                    return new IntegerNode(node.Location, 0);
+
+                if (rightOptimized is IntegerNode { Value: 1 })
+                    return leftOptimized;
+
+                break;
+
+            default:
+                return node with
+                {
+                    Left = leftOptimized,
+                    Right = rightOptimized
+                };
+        }
+
+        return node;
+    }
+
+    /// <summary>
     /// Splits the syntax node into mononoms and adds them to the list
+    /// add(sub(1, 2), 3) => { { add, 1 }, { sub, 2 }, { add, 3 } }
     /// </summary>
     /// <param name="polynom">The polynom to add to</param>
-    /// <param name="syntaxNode">The syntax node to split</param>
+    /// <param name="node">The syntax node to split</param>
     /// <param name="flipOperations">If true, flips all the operations</param>
-    private static void AddToThePolynom(
-        List<Mononom> polynom, SyntaxNode syntaxNode, bool flipOperations
-    )
+    private static void AddToPolynom(List<Mononom> polynom, SyntaxNode node, bool flipOperations)
     {
-        if (syntaxNode is BinaryNode binary
-         && binary.Operation is BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction)
+        if (node is BinaryNode { Operation: BinaryNodeOperation.Addition
+            or BinaryNodeOperation.Subtraction } binary)
         {
-            AddToThePolynom(
+            AddToPolynom(
                 polynom, binary.Left,
                 flipOperations
             );
-            AddToThePolynom(
+            AddToPolynom(
                 polynom, binary.Right,
                 flipOperations != (binary.Operation is BinaryNodeOperation.Subtraction)
             );
@@ -35,119 +110,21 @@ public static class Optimizer
             polynom.Add(
                 new Mononom(
                     flipOperations ? BinaryNodeOperation.Subtraction : BinaryNodeOperation.Addition,
-                    ComputeExpression(syntaxNode)
+                    OptimizeExpression(node)
                 )
             );
         }
     }
 
     /// <summary>
-    /// Takes a syntax node and returns a list of values packed with
-    /// the operation they used with
-    /// add(sub(1, 2), 3) => { { add, 1 }, { sub, 2 }, { add, 3 } }
-    /// </summary>
-    /// <param name="syntaxNode">The node to split</param>
-    private static List<Mononom> SplitIntoPolynom(SyntaxNode syntaxNode)
-    {
-        List<Mononom> result = new();
-        AddToThePolynom(result, syntaxNode, false);
-        return result;
-    }
-
-    /// <summary>
-    /// A simple optimization method, used for optimizing the mononoms
-    /// </summary>
-    /// <param name="node">The expression to compute</param>
-    private static SyntaxNode ComputeExpression(SyntaxNode node)
-    {
-        if (node is BinaryNode binary)
-        {
-            SyntaxNode leftOptimized = OptimizeExpression(binary.Left);
-            SyntaxNode rightOptimized = OptimizeExpression(binary.Right);
-
-            // If we can compute the result
-            if (leftOptimized is IntegerNode { Value: long leftValue }
-             && rightOptimized is IntegerNode { Value: long rightValue })
-            {
-                return new IntegerNode(
-                    node.Location,
-                    binary.Operation switch
-                    {
-                        BinaryNodeOperation.Addition       => leftValue + rightValue,
-                        BinaryNodeOperation.Subtraction    => leftValue - rightValue,
-                        BinaryNodeOperation.Multiplication => leftValue * rightValue,
-                        BinaryNodeOperation.Divizion       => leftValue / rightValue,
-                        _ => throw new ArgumentException("Invalid binary operation")
-                    }
-                );
-            }
-            // Check "a * 1 = a, a * 0 = 0, etc." optimizations
-            else
-            {
-                if (binary.Operation is BinaryNodeOperation.Multiplication)
-                {
-                    long integerOperand;
-                    SyntaxNode otherOperand;
-
-                    if (leftOptimized is IntegerNode { Value: long leftIntegerOperand })
-                    {
-                        integerOperand = leftIntegerOperand;
-                        otherOperand = rightOptimized;
-                    }
-
-                    else if (rightOptimized is IntegerNode { Value: long rightIntegerOperand })
-                    {
-                        integerOperand = rightIntegerOperand;
-                        otherOperand = leftOptimized;
-                    }
-                    else
-                    {
-                        goto noOptimizations;
-                    }
-
-                    switch (integerOperand)
-                    {
-                        case 0:
-                            return new IntegerNode(node.Location, 0);
-
-                        case 1:
-                            return otherOperand;
-                    }
-                }
-                else if (binary.Operation is BinaryNodeOperation.Divizion)
-                {
-                    if (leftOptimized is IntegerNode { Value: 0 })
-                        return new IntegerNode(node.Location, 0);
-
-                    if (rightOptimized is IntegerNode { Value: 1 })
-                        return leftOptimized;
-                }
-
-            noOptimizations:
-                return binary with
-                {
-                    Left = leftOptimized,
-                    Right = rightOptimized
-                };
-            }
-        }
-
-        return node;
-    }
-
-    /// <summary>
-    /// Optimized the given binary expression
+    /// Optimized the given addition or subtraction
     /// </summary>
     /// <param name="node">The expression to optimize</param>
     /// <returns>The optimized expression</returns>
     private static SyntaxNode OptimizePolynom(BinaryNode node)
     {
-        if (node.Operation is not (BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction))
-        {
-            return ComputeExpression(node);
-        }
-
-        List<Mononom> polynom = SplitIntoPolynom(node);
+        List<Mononom> polynom = new();
+        AddToPolynom(polynom, node, false);
 
         // Sum up all the constants
 
@@ -213,10 +190,35 @@ public static class Optimizer
     /// <param name="node">The expression to optimize</param>
     /// <returns>The optimized expression</returns>
     public static SyntaxNode OptimizeExpression(SyntaxNode node)
-        => node switch
+    {
+        switch (node)
         {
-            TypeCastNode typeCast => typeCast with { Value = OptimizeExpression(typeCast.Value) },
-            BinaryNode   binary   => OptimizePolynom(binary),
-            _                     => node
+            case TypeCastNode typeCast:
+                return typeCast with { Value = OptimizeExpression(typeCast.Value) };
+
+            case BinaryNode binary:
+                if (binary.Operation is BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction)
+                    return OptimizePolynom(binary);
+                else
+                    return OptimizeMononom(binary);
+
+            case NegationNode negation:
+                SyntaxNode innerOptimized = OptimizeExpression(negation.InnerExpression);
+
+                if (innerOptimized is IntegerNode innerInteger)
+                {
+                    return new IntegerNode(
+                        node.Location,
+                        -innerInteger.Value
+                    );
+                }
+                else
+                {
+                    return negation with { InnerExpression = innerOptimized };
+                }
+
+            default:
+                return node;
         };
+    }
 }

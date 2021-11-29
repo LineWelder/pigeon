@@ -6,19 +6,6 @@ using CompilerLibrary.Compiling;
 using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
-// ====================================
-//  TODO:
-// * Negation
-// * Explicit integer types
-// * Function stack frames and register saving
-// * Return statements
-// * Function arguments
-// * Global initializations, _start and i32 main()
-// * Implement multiplication and division
-// * Function pointers
-// * Merge CompiledVariable, CompiledFunction and SymbolValue
-// ====================================
-
 namespace CompilerTest;
 
 class Program

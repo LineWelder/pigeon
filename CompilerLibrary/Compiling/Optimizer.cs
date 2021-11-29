@@ -127,11 +127,12 @@ public static class Optimizer
     /// Optimized the given addition or subtraction
     /// </summary>
     /// <param name="node">The expression to optimize</param>
+    /// <param name="flipOperations">If true, all the operations will be flipped</param>
     /// <returns>The optimized expression</returns>
-    private static SyntaxNode OptimizePolynom(BinaryNode node)
+    private static SyntaxNode OptimizePolynom(BinaryNode node, bool flipOperations = false)
     {
         List<Mononom> polynom = new();
-        AddToPolynom(polynom, node, false);
+        AddToPolynom(polynom, node, flipOperations);
 
         // Sum up all the constants
 
@@ -160,14 +161,26 @@ public static class Optimizer
 
         // Convert the polynome back to SyntaxNode
 
-        int firstMononomIndex = polynom.FindIndex(x => x.Operation is BinaryNodeOperation.Addition);
-        SyntaxNode result = firstMononomIndex >= 0
-            ? polynom[firstMononomIndex].Value
-            : new IntegerNode(node.Location, constant);
+        int firstPositiveMononomIndex = polynom.FindIndex(x => x.Operation is BinaryNodeOperation.Addition);
+        SyntaxNode result;
+        
+        if (firstPositiveMononomIndex < 0 && constant != 0 || polynom.Count == 0)
+        {
+            result = new IntegerNode(node.Location, constant);
+        }
+        else if (firstPositiveMononomIndex < 0)
+        {
+            result = new NegationNode(polynom[0].Value.Location, polynom[0].Value);
+            firstPositiveMononomIndex = 0;
+        }
+        else
+        {
+            result = polynom[firstPositiveMononomIndex].Value;
+        }
 
         for (int i = 0; i < polynom.Count; i++)
         {
-            if (i == firstMononomIndex)
+            if (i == firstPositiveMononomIndex)
                 continue;
 
             result = new BinaryNode(
@@ -178,7 +191,7 @@ public static class Optimizer
             );
         }
 
-        if (constant != 0 && firstMononomIndex >= 0)
+        if (constant != 0 && firstPositiveMononomIndex >= 0)
         {
             result = new BinaryNode(
                 result.Location,
@@ -218,6 +231,11 @@ public static class Optimizer
                         node.Location,
                         -innerInteger.Value
                     );
+                }
+                else if (innerOptimized is BinaryNode { Operation: BinaryNodeOperation.Addition
+                    or BinaryNodeOperation.Subtraction } innerBinary)
+                {
+                    return OptimizePolynom(innerBinary, true);
                 }
                 else
                 {

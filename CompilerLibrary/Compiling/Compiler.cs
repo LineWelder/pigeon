@@ -15,9 +15,9 @@ public class Compiler
         { "i32", new TypeInfo(Size: 4, Name: "i32", Abbreviation: 'i', IsSigned: true) },
         { "i16", new TypeInfo(Size: 2, Name: "i16", Abbreviation: 's', IsSigned: true) },
         { "i8",  new TypeInfo(Size: 1, Name: "i8",  Abbreviation: 'c', IsSigned: true) },
-        { "u32", new TypeInfo(Size: 4, Name: "u32", Abbreviation: 'i', IsSigned: false) },
-        { "u16", new TypeInfo(Size: 2, Name: "u16", Abbreviation: 's', IsSigned: false) },
-        { "u8",  new TypeInfo(Size: 1, Name: "u8",  Abbreviation: 'c', IsSigned: false) }
+        { "u32", new TypeInfo(Size: 4, Name: "u32", Abbreviation: 'd', IsSigned: false) },
+        { "u16", new TypeInfo(Size: 2, Name: "u16", Abbreviation: 'w', IsSigned: false) },
+        { "u8",  new TypeInfo(Size: 1, Name: "u8",  Abbreviation: 'b', IsSigned: false) }
     };
 
     private readonly Dictionary<string, VariableInfo> variables = new();

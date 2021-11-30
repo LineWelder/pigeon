@@ -109,10 +109,10 @@ public class Parser
             );
         }
 
-        if (tokenizer.CurrentToken.Type is TokenType.Colon)
+        while (tokenizer.CurrentToken.Type is TokenType.Colon)
         {
             tokenizer.NextToken();
-            return new TypeCastNode(
+            result = new TypeCastNode(
                 result.Location,
                 result, ParseType()
             );

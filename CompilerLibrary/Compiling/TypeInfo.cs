@@ -4,7 +4,7 @@
 /// The representation of a type used by the compiler
 /// Size is given in bytes
 /// </summary>
-public record CompiledType(
+public record TypeInfo(
     uint Size,
     string Declaration, string Name,
     char Abbreviation, bool IsSigned

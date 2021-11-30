@@ -32,7 +32,7 @@ internal class AssemblyGenerator
         if (function.ArgumentList.Length > 0)
             builder.Append('@');
         foreach (FunctionArgumentDeclarationNode argument in function.ArgumentList)
-            builder.Append(Compiler.GetCompiledType(argument.Type).Abbreviation);
+            builder.Append(Compiler.GetTypeInfo(argument.Type).Abbreviation);
 
         return builder.ToString();
     }

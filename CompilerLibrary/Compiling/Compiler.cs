@@ -10,18 +10,18 @@ namespace CompilerLibrary.Compiling;
 /// </summary>
 public class Compiler
 {
-    internal static readonly Dictionary<string, CompiledType> COMPILED_TYPES = new()
+    internal static readonly Dictionary<string, TypeInfo> COMPILED_TYPES = new()
     {
-        { "i32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) },
-        { "i16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) },
-        { "i8",  new CompiledType(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: true) },
-        { "u32", new CompiledType(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: false) },
-        { "u16", new CompiledType(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: false) },
-        { "u8",  new CompiledType(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: false) }
+        { "i32", new TypeInfo(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) },
+        { "i16", new TypeInfo(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) },
+        { "i8",  new TypeInfo(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: true) },
+        { "u32", new TypeInfo(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: false) },
+        { "u16", new TypeInfo(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: false) },
+        { "u8",  new TypeInfo(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: false) }
     };
 
-    private readonly Dictionary<string, CompiledVariable> variables = new();
-    private readonly Dictionary<string, CompiledFunction> functions = new();
+    private readonly Dictionary<string, VariableInfo> variables = new();
+    private readonly Dictionary<string, FunctionInfo> functions = new();
 
     private AssemblyGenerator assemblyGenerator;
     private RegisterManager registerManager;
@@ -33,12 +33,12 @@ public class Compiler
     /// </summary>
     /// <param name="type">The type</param>
     /// <returns>The corresponding compiled type</returns>
-    public static CompiledType GetCompiledType(SyntaxNode type)
+    public static TypeInfo GetTypeInfo(SyntaxNode type)
     {
         if (type is not IdentifierNode identifier)
             throw new UnexpectedSyntaxNodeException(type, "type identifier");
 
-        if (COMPILED_TYPES.TryGetValue(identifier.Value, out CompiledType compiledType))
+        if (COMPILED_TYPES.TryGetValue(identifier.Value, out TypeInfo compiledType))
             return compiledType;
 
         throw new UnknownIdentifierException(identifier);
@@ -56,17 +56,17 @@ public class Compiler
             FunctionArgumentDeclarationNode argument = function.ArgumentList[i];
             arguments[i] = new FunctionArgument(
                 argument.Location,
-                GetCompiledType(argument.Type),
+                GetTypeInfo(argument.Type),
                 argument.Identifier
             );
         }
 
         string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(function);
 
-        functions.Add(assemblySymbol, new CompiledFunction(
+        functions.Add(assemblySymbol, new FunctionInfo(
             function.Location,
             assemblySymbol,
-            function.ReturnType is null ? null : GetCompiledType(function.ReturnType),
+            function.ReturnType is null ? null : GetTypeInfo(function.ReturnType),
             arguments,
             function.Body
         ));
@@ -78,7 +78,7 @@ public class Compiler
     /// <param name="variable">The variable declaration</param>
     public void RegisterVariable(VariableDeclarationNode variable)
     {
-        CompiledType variableType = GetCompiledType(variable.Type);
+        TypeInfo variableType = GetTypeInfo(variable.Type);
         if (variable.Value is not IntegerNode valueInteger)
             throw new UnexpectedSyntaxNodeException(variable.Value, "a number");
 
@@ -94,7 +94,7 @@ public class Compiler
         string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(variable.Identifier);
         string variableValue = valueInteger.Value.ToString();
 
-        variables.Add(assemblySymbol, new CompiledVariable(
+        variables.Add(assemblySymbol, new VariableInfo(
             variable.Location,
             assemblySymbol,
             variableType,
@@ -137,7 +137,7 @@ public class Compiler
     /// <param name="explicitly"></param>
     /// <returns>The converted integer value</returns>
     private static IntegerValue ConvertIntegerValue(
-        SyntaxNode node, IntegerValue value, CompiledType type, bool explicitly = false
+        SyntaxNode node, IntegerValue value, TypeInfo type, bool explicitly = false
     )
     {
         if (value.Type.IsSigned != type.IsSigned && value.Value < 0)
@@ -235,9 +235,9 @@ public class Compiler
     /// <returns>The location of the converted value</returns>
     private Value GenerateTypeCast(
         SyntaxNode node, Value value,
-        CompiledType type, bool explicitly = false)
+        TypeInfo type, bool explicitly = false)
     {
-        RegisterValue CutRegister(RegisterValue register, CompiledType type)
+        RegisterValue CutRegister(RegisterValue register, TypeInfo type)
         {
             int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
             string convertedRegister = RegisterManager.GetRegisterNameFromId(registerId, type);
@@ -311,20 +311,20 @@ public class Compiler
     /// </summary>
     /// <param name="node">The expression to compile</param>
     /// <returns>Value representing the result of the expression</returns>
-    private Value CompileValue(SyntaxNode node, CompiledType targetType = null)
+    private Value CompileValue(SyntaxNode node, TypeInfo targetType = null)
     {
         switch (node)
         {
             case IdentifierNode identifier:
                 if (!variables.TryGetValue(
                     AssemblyGenerator.GetAssemblySymbol(identifier.Value),
-                    out CompiledVariable variable
+                    out VariableInfo variable
                 )) throw new UnknownIdentifierException(identifier);
 
                 return new SymbolValue(variable.Type, variable.AssemblySymbol);
 
             case IntegerNode integer:
-                CompiledType type = targetType;
+                TypeInfo type = targetType;
                 if (integer.Value > type.MaximumValue || integer.Value < type.MinimumValue)
                     throw new InvalidTypeCastException(
                         integer.Location,
@@ -335,7 +335,7 @@ public class Compiler
                 return new IntegerValue(type, integer.Value);
 
             case TypeCastNode typeCast:
-                CompiledType castInto = GetCompiledType(typeCast.Type);
+                TypeInfo castInto = GetTypeInfo(typeCast.Type);
                 return GenerateTypeCast(
                     typeCast,
                     CompileValue(typeCast.Value, castInto),
@@ -377,7 +377,7 @@ public class Compiler
                     );
                 }
 
-                CompiledType resultType = targetType
+                TypeInfo resultType = targetType
                     ?? (left.Type.Size > right.Type.Size
                         ? left.Type : right.Type);
 
@@ -444,7 +444,7 @@ public class Compiler
     /// Compiles a function and appends the compiled assembly to the builder
     /// </summary>
     /// <param name="function">The function to compile</param>
-    private void CompileFunction(CompiledFunction function)
+    private void CompileFunction(FunctionInfo function)
     {
         foreach (SyntaxNode node in function.Body)
         {

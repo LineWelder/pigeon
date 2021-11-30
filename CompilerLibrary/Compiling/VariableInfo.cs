@@ -3,9 +3,9 @@
 /// <summary>
 /// Represents a compiled variable
 /// </summary>
-public record CompiledVariable(
+public record VariableInfo(
     Location SourceLocation,
     string AssemblySymbol,
-    CompiledType Type,
+    TypeInfo Type,
     string AssemblyValue
 );

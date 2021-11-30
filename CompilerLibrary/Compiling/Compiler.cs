@@ -242,9 +242,18 @@ public class Compiler
 
             if (type.Size > register.Type.Size)
             {
-                assemblyGenerator.EmitInstruction(
-                    "and", convertedRegister, register.Type.Mask
-                );
+                if (type.IsSigned)
+                {
+                    assemblyGenerator.EmitInstruction(
+                        "movsx", convertedRegister, register
+                    );
+                }
+                else
+                {
+                    assemblyGenerator.EmitInstruction(
+                        "and", convertedRegister, register.Type.Mask
+                    );
+                }
             }
 
             return new RegisterValue(type, convertedRegister);

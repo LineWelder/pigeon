@@ -61,6 +61,9 @@ public static class Optimizer
 
                     case 1:
                         return otherOperand;
+
+                    case -1:
+                        return new NegationNode(node.Location, otherOperand);
                 }
                 break;
 
@@ -68,8 +71,17 @@ public static class Optimizer
                 if (leftOptimized is IntegerNode { Value: 0 })
                     return new IntegerNode(node.Location, 0);
 
-                if (rightOptimized is IntegerNode { Value: 1 })
-                    return leftOptimized;
+                if (rightOptimized is IntegerNode rightInteger)
+                {
+                    switch (rightInteger.Value)
+                    {
+                        case 1:
+                            return leftOptimized;
+
+                        case -1:
+                            return new NegationNode(node.Location, leftOptimized);
+                    }
+                }
 
                 break;
 

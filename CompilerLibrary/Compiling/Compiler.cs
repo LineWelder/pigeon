@@ -12,12 +12,12 @@ public class Compiler
 {
     internal static readonly Dictionary<string, TypeInfo> COMPILED_TYPES = new()
     {
-        { "i32", new TypeInfo(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: true) },
-        { "i16", new TypeInfo(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: true) },
-        { "i8",  new TypeInfo(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: true) },
-        { "u32", new TypeInfo(Size: 4, Declaration: "dd", Name: "dword", Abbreviation: 'i', IsSigned: false) },
-        { "u16", new TypeInfo(Size: 2, Declaration: "dw", Name: "word",  Abbreviation: 's', IsSigned: false) },
-        { "u8",  new TypeInfo(Size: 1, Declaration: "db", Name: "byte",  Abbreviation: 'c', IsSigned: false) }
+        { "i32", new TypeInfo(Size: 4, Name: "i32", Abbreviation: 'i', IsSigned: true) },
+        { "i16", new TypeInfo(Size: 2, Name: "i16", Abbreviation: 's', IsSigned: true) },
+        { "i8",  new TypeInfo(Size: 1, Name: "i8",  Abbreviation: 'c', IsSigned: true) },
+        { "u32", new TypeInfo(Size: 4, Name: "u32", Abbreviation: 'i', IsSigned: false) },
+        { "u16", new TypeInfo(Size: 2, Name: "u16", Abbreviation: 's', IsSigned: false) },
+        { "u8",  new TypeInfo(Size: 1, Name: "u8",  Abbreviation: 'c', IsSigned: false) }
     };
 
     private readonly Dictionary<string, VariableInfo> variables = new();
@@ -464,7 +464,7 @@ public class Compiler
         foreach (var pair in variables)
         {
             assemblyGenerator.EmitVariable(
-                pair.Key, pair.Value.Type.Declaration,
+                pair.Key, pair.Value.Type.AssemblyDeclaration,
                 pair.Value.AssemblyValue
             );
         }

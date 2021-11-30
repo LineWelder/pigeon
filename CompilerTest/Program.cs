@@ -33,18 +33,18 @@ main()
         {
             SyntaxNode[] nodes = parser.ParseFile();
 
-            FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
-            AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
-            SyntaxNode expression = assignment?.Right;
-            SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
-            
-            Debug.PrintSyntaxNode(expression);
-            Console.WriteLine();
-            Debug.PrintSyntaxNode(optimized);
-            Console.WriteLine();
+            // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
+            // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
+            // SyntaxNode expression = assignment?.Right;
+            // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
+            // 
+            // Debug.PrintSyntaxNode(expression);
+            // Console.WriteLine();
+            // Debug.PrintSyntaxNode(optimized);
+            // Console.WriteLine();
 
-            // compiler.RegisterDeclarations(nodes);
-            // Console.WriteLine(compiler.CompileAll());
+            compiler.RegisterDeclarations(nodes);
+            Console.WriteLine(compiler.CompileAll());
         }
         catch (CompilerException ex)
         {

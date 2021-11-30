@@ -439,18 +439,6 @@ public class Compiler
     }
 
     /// <summary>
-    /// Compiles a function and appends the compiled assembly to the builder
-    /// </summary>
-    /// <param name="function">The function to compile</param>
-    private void CompileFunction(FunctionInfo function)
-    {
-        foreach (SyntaxNode node in function.Body)
-        {
-            CompileStatement(node);
-        }
-    }
-
-    /// <summary>
     /// Linkes all the compiled nodes and returns the generated FASM code
     /// </summary>
     /// <returns>The generated FASM code</returns>
@@ -470,7 +458,10 @@ public class Compiler
         foreach (var pair in functions)
         {
             assemblyGenerator.EmitSymbol(pair.Key);
-            CompileFunction(pair.Value);
+            foreach (SyntaxNode node in pair.Value.Body)
+            {
+                CompileStatement(node);
+            }
         }
 
         return assemblyGenerator.LinkAssembly();

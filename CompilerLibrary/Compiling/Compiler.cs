@@ -29,10 +29,8 @@ public class Compiler
     public Compiler() { }
 
     /// <summary>
-    /// Returns the corresponding CompiledType for the given type
+    /// Returns the TypeInfo for the given type
     /// </summary>
-    /// <param name="type">The type</param>
-    /// <returns>The corresponding compiled type</returns>
     public static TypeInfo GetTypeInfo(SyntaxNode type)
     {
         if (type is not IdentifierNode identifier)
@@ -186,19 +184,19 @@ public class Compiler
         if (source is SymbolValue && destination is not RegisterValue)
         {
             RegisterValue transferRegister = registerManager.AllocateRegister(node, source.Type);
-            assemblyGenerator.EmitInstruction("mov", transferRegister.ToString(), source.ToString());
+            assemblyGenerator.EmitInstruction("mov", transferRegister, source);
             source = transferRegister;
         }
 
         if (source is IntegerValue integerValue)
         {
             assemblyGenerator.EmitInstruction(
-                "mov", destination.ToString(), ConvertIntegerValue(node, integerValue, destination.Type).ToString()
+                "mov", destination, ConvertIntegerValue(node, integerValue, destination.Type)
             );
         }
         else if (destination.Type.Size == source.Type.Size)
         {
-            assemblyGenerator.EmitInstruction("mov", destination.ToString(), source.ToString());
+            assemblyGenerator.EmitInstruction("mov", destination, source);
         }
         else if (destination.Type.Size > source.Type.Size)
         {
@@ -212,7 +210,7 @@ public class Compiler
 
             assemblyGenerator.EmitInstruction(
                 destination.Type.IsSigned ? "movsx" : "movzx",
-                destination.ToString(), source.ToString()
+                destination, source
             );
         }
         else
@@ -245,7 +243,7 @@ public class Compiler
             if (type.Size > register.Type.Size)
             {
                 assemblyGenerator.EmitInstruction(
-                    "and", convertedRegister, type.Mask.ToString()
+                    "and", convertedRegister, type.Mask
                 );
             }
 
@@ -299,7 +297,7 @@ public class Compiler
                 RegisterValue conversionRegister = registerManager.AllocateRegister(node, type);
                 assemblyGenerator.EmitInstruction(
                     type.IsSigned ? "movsx" : "movzx",
-                    conversionRegister.ToString(), value.ToString()
+                    conversionRegister, value
                 );
 
                 return conversionRegister;
@@ -361,7 +359,7 @@ public class Compiler
                     inner = resultRegister;
                 }
 
-                assemblyGenerator.EmitInstruction("neg", inner.ToString());
+                assemblyGenerator.EmitInstruction("neg", inner);
                 return inner;
 
             case BinaryNode binary:
@@ -404,7 +402,7 @@ public class Compiler
                         BinaryNodeOperation.Subtraction => "sub",
                         _ => throw new NotImplementedException()
                     },
-                    left.ToString(), right.ToString()
+                    left, right
                 );
 
                 registerManager.FreeRegister(right);

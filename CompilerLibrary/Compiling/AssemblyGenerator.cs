@@ -49,7 +49,7 @@ internal class AssemblyGenerator
     /// </summary>
     /// <param name="opcode">The instruction opcode</param>
     /// <param name="arguments">The list of instuction arguments</param>
-    public void EmitInstruction(string opcode, params string[] arguments)
+    public void EmitInstruction(string opcode, params object[] arguments)
         => textSection.AppendLine($"\t{opcode}\t{string.Join(", ", arguments)}");
 
     /// <summary>
@@ -58,7 +58,7 @@ internal class AssemblyGenerator
     /// <param name="symbol">The varaible symbol</param>
     /// <param name="declaration">The keyword used for value declaration ('db', 'dw', etc.)</param>
     /// <param name="value">The variable value</param>
-    public void EmitVariable(string symbol, string declaration, string value)
+    public void EmitVariable(string symbol, string declaration, object value)
         => dataSection.AppendLine($"{symbol} {declaration} {value}");
 
     /// <summary>

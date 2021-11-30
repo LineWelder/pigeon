@@ -220,9 +220,7 @@ public static class Optimizer
                 -innerInteger.Value
             );
         }
-        else if (innerOptimized is BinaryNode { Operation: BinaryNodeOperation.Addition
-            or BinaryNodeOperation.Subtraction
-        } innerBinary)
+        else if (innerOptimized is BinaryNode innerBinary)
         {
             switch (innerBinary.Operation)
             {
@@ -230,7 +228,22 @@ public static class Optimizer
                     return OptimizePolynom(innerBinary, true);
 
                 case BinaryNodeOperation.Multiplication or BinaryNodeOperation.Divizion:
-                    throw new NotImplementedException();
+                    if (innerBinary.Left is IntegerNode leftInteger)
+                    {
+                        return innerBinary with
+                        {
+                            Left = leftInteger with { Value = -leftInteger.Value }
+                        };
+                    }
+                    else if (innerBinary.Right is IntegerNode rightInteger)
+                    {
+                        return innerBinary with
+                        {
+                            Right = rightInteger with { Value = -rightInteger.Value }
+                        };
+                    }
+
+                    break;
             }
         }
 

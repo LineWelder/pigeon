@@ -5,6 +5,7 @@
 - Return statements and function calls
 - Function arguments
 - Local variables
+- Branching and loops
 - Pointers
 - Strings
 - Global initializations, _start and i32 main()
@@ -26,7 +27,7 @@ Declares a global variable named `test` of type `i16` and initializes it with `2
 ```
 func()
 {
-	...
+    ...
 }
 ```
 Declares a function named `func` that doesn't return any value. Analog of void functions in C.

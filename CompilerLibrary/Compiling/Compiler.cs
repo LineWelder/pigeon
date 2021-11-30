@@ -243,7 +243,7 @@ public class Compiler
             if (type.Size > register.Type.Size)
             {
                 assemblyGenerator.EmitInstruction(
-                    "and", convertedRegister, type.Mask
+                    "and", convertedRegister, register.Type.Mask
                 );
             }
 

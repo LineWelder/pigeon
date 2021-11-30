@@ -124,7 +124,7 @@ public static class Optimizer
     }
 
     /// <summary>
-    /// Optimized the given addition or subtraction
+    /// Optimizes the given addition or subtraction
     /// </summary>
     /// <param name="node">The expression to optimize</param>
     /// <param name="flipOperations">If true, all the operations will be flipped</param>
@@ -205,6 +205,39 @@ public static class Optimizer
     }
 
     /// <summary>
+    /// Optimizes the given negation
+    /// </summary>
+    /// <param name="node">The node to optimi</param>
+    /// <returns>The optimized expression</returns>
+    private static SyntaxNode OptimizeNegation(NegationNode node)
+    {
+        SyntaxNode innerOptimized = OptimizeExpression(node.InnerExpression);
+
+        if (innerOptimized is IntegerNode innerInteger)
+        {
+            return new IntegerNode(
+                node.Location,
+                -innerInteger.Value
+            );
+        }
+        else if (innerOptimized is BinaryNode { Operation: BinaryNodeOperation.Addition
+            or BinaryNodeOperation.Subtraction
+        } innerBinary)
+        {
+            switch (innerBinary.Operation)
+            {
+                case BinaryNodeOperation.Addition or BinaryNodeOperation.Subtraction:
+                    return OptimizePolynom(innerBinary, true);
+
+                case BinaryNodeOperation.Multiplication or BinaryNodeOperation.Divizion:
+                    throw new NotImplementedException();
+            }
+        }
+
+        return node with { InnerExpression = innerOptimized };
+    }
+
+    /// <summary>
     /// Optimizes the given expression
     /// </summary>
     /// <param name="node">The expression to optimize</param>
@@ -223,24 +256,7 @@ public static class Optimizer
                     return OptimizeMononom(binary);
 
             case NegationNode negation:
-                SyntaxNode innerOptimized = OptimizeExpression(negation.InnerExpression);
-
-                if (innerOptimized is IntegerNode innerInteger)
-                {
-                    return new IntegerNode(
-                        node.Location,
-                        -innerInteger.Value
-                    );
-                }
-                else if (innerOptimized is BinaryNode { Operation: BinaryNodeOperation.Addition
-                    or BinaryNodeOperation.Subtraction } innerBinary)
-                {
-                    return OptimizePolynom(innerBinary, true);
-                }
-                else
-                {
-                    return negation with { InnerExpression = innerOptimized };
-                }
+                return OptimizeNegation(negation);
 
             default:
                 return node;

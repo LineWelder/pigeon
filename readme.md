@@ -1,6 +1,5 @@
 # Pigeon - a simple programming language made for fun
 ## Features to implement
-- Negation
 - Explicit integer literal types
 - Function stack frames and register saving
 - Return statements and function calls
@@ -41,13 +40,14 @@ Computes the expression on the right side and assigns the variable on the left s
 to it's result
 ### Basic arithmetics
 ```
-test + 4 * 3 - 29
+-test + 4 * 3 - 29
 ```
 - Available are four basic arithmetic operators: + - * /<br/>
+  And unary - to negate values. `test * -2` and `test + -2` are valid expressions<br/>
   **Multiplication and divizion are not implemented yet!
   However if the result can be computed at compile time it will be**
 - The compiler is able to optimize arithmetic expressions, so the compiled expression will be
-  `test - 17`
+  `-17 - test`
 - The result type of an expression is the widest type of a variable used in it, or
   the type of the variable the expression result is assigned to
 ### Explicit type casts

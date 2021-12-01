@@ -8,6 +8,8 @@ using CompilerLibrary.Tokenizing;
 
 namespace CompilerTest;
 
+// TODO Merge Compiler.GenerateMov and Compiler.GenerateTypeCast
+
 class Program
 {
     static void Main(string[] args)

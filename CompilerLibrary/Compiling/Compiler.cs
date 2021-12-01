@@ -188,6 +188,15 @@ public class Compiler
             source = transferRegister;
         }
 
+        if (destination.Type.IsSigned != source.Type.IsSigned)
+        {
+            throw new InvalidTypeCastException(
+                node.Location,
+                source.Type.Name, destination.Type.Name,
+                "cannot change type's signedness"
+            );
+        }
+
         if (source is IntegerValue integerValue)
         {
             assemblyGenerator.EmitInstruction(
@@ -269,7 +278,7 @@ public class Compiler
             return ConvertIntegerValue(node, integerValue, type, explicitly);
         }
 
-        if (value.Type.IsSigned != type.IsSigned)
+        if (value.Type.IsSigned != type.IsSigned && !explicitly)
         {
             throw new InvalidTypeCastException(
                 node.Location,

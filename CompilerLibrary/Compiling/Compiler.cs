@@ -193,7 +193,7 @@ public class Compiler
             throw new InvalidTypeCastException(
                 node.Location,
                 source.Type.Name, destination.Type.Name,
-                "cannot change type's signedness"
+                "the types must be either both signed or unsigned"
             );
         }
 
@@ -209,14 +209,6 @@ public class Compiler
         }
         else if (destination.Type.Size > source.Type.Size)
         {
-            if (destination.Type.IsSigned != source.Type.IsSigned)
-            {
-                throw new InvalidTypeCastException(
-                    node.Location, source.Type.Name, destination.Type.Name,
-                    "the types must be either both signed or unsigned"
-                );
-            }
-
             assemblyGenerator.EmitInstruction(
                 destination.Type.IsSigned ? "movsx" : "movzx",
                 destination, source
@@ -229,6 +221,42 @@ public class Compiler
                 "possible value loss"
             );
         }
+
+        registerManager.FreeRegister(source);
+    }
+
+    private void GenerateAssignmentWithExplicitTypeCast(
+        SyntaxNode node, Value value, Value destination, Value source)
+    {
+        if (value.Type.Size > destination.Type.Size)
+        {
+            switch (value)
+            {
+                case RegisterValue register:
+                    int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
+                    string convertedRegister = RegisterManager.GetRegisterNameFromId(
+                        registerId, destination.Type
+                    );
+
+                    assemblyGenerator.EmitInstruction(
+                        "mov", destination, convertedRegister
+                    );
+                    break;
+
+                case SymbolValue :
+                    int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
+                    string convertedRegister = RegisterManager.GetRegisterNameFromId(
+                        registerId, destination.Type
+                    );
+
+                    assemblyGenerator.EmitInstruction(
+                        "mov", destination, convertedRegister
+                    );
+                    break;
+            }
+        }
+
+        GenerateMov(node, destination, value);
     }
 
     /// <summary>

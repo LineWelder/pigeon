@@ -178,7 +178,10 @@ public class Compiler
     /// used for exception throwing</param>
     /// <param name="destination">The location to put data to</param>
     /// <param name="source">The location to take data from</param>
-    private void GenerateMov(SyntaxNode node, Value destination, Value source)
+    /// <param name="explicitTypeCast">If true, allows unsafe type casts</param>
+    private void GenerateMov(
+        SyntaxNode node, Value destination,
+        Value source, bool explicitTypeCast = false)
     {
         // We cannot transfer data from a variable to another directly
         if (source is SymbolValue && destination is not RegisterValue)
@@ -188,7 +191,7 @@ public class Compiler
             source = transferRegister;
         }
 
-        if (destination.Type.IsSigned != source.Type.IsSigned)
+        if (!explicitTypeCast && destination.Type.IsSigned != source.Type.IsSigned)
         {
             throw new InvalidTypeCastException(
                 node.Location,
@@ -216,23 +219,17 @@ public class Compiler
         }
         else
         {
-            throw new InvalidTypeCastException(
-                node.Location, source.Type.Name, destination.Type.Name,
-                "possible value loss"
-            );
-        }
+            if (!explicitTypeCast)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location, source.Type.Name, destination.Type.Name,
+                    "possible value loss"
+                );
+            }
 
-        registerManager.FreeRegister(source);
-    }
-
-    private void GenerateExplicitTypeCastMov(
-        SyntaxNode node, Value destination, Value value)
-    {
-        if (value.Type.Size > destination.Type.Size)
-        {
             Value converted;
 
-            switch (value)
+            switch (source)
             {
                 case RegisterValue register:
                     int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
@@ -252,15 +249,13 @@ public class Compiler
                     break;
 
                 default:
-                    throw new ArgumentException("Unexpected value class", nameof(value));
+                    throw new ArgumentException("Unexpected value class", nameof(source));
             }
 
             assemblyGenerator.EmitInstruction("mov", destination, converted);
-            registerManager.FreeRegister(value);
-            return;
         }
 
-        GenerateMov(node, destination, value);
+        registerManager.FreeRegister(source);
     }
 
     /// <summary>
@@ -481,14 +476,12 @@ public class Compiler
                 if (rightSyntax is TypeCastNode typeCast
                  && GetTypeInfo(typeCast.Type) == left.Type)
                 {
-                    GenerateExplicitTypeCastMov(
-                        assignment, left, CompileValue(typeCast.Value)
-                    );
+                    GenerateMov(assignment, left, CompileValue(typeCast.Value), true);
                 }
                 else
                 {
                     Value right = CompileValue(rightSyntax);
-                    GenerateMov(assignment, left, CompileValue(rightSyntax));
+                    GenerateMov(assignment, left, right);
                     registerManager.FreeRegister(right);
                 }
                 break;

@@ -9,6 +9,14 @@ namespace CompilerLibrary.Compiling;
 /// </summary>
 internal class RegisterManager
 {
+    /// <summary>
+    /// Which registers were used in the current function
+    /// </summary>
+    private readonly bool[] used = new bool[4];
+
+    /// <summary>
+    /// Which registers are currently allocated
+    /// </summary>
     private readonly bool[] allocated = new bool[4];
 
     /// <summary>
@@ -60,9 +68,26 @@ internal class RegisterManager
             }
         }
 
+        used[id] = true;
         allocated[id] = true;
         return new RegisterValue(type, GetRegisterNameFromId(id, type));
     }
+
+    /// <summary>
+    /// Should be called in the beginning of a function compilation
+    /// Makes the manager forget which registers were used
+    /// </summary>
+    public void ResetUsedRegisters()
+    {
+        Array.Fill(used, false);
+    }
+
+    /// <summary>
+    /// Returns true if the given register was used in the current function
+    /// </summary>
+    /// <param name="id">The id of the register to check</param>
+    public bool WasUsed(int id)
+        => used[id];
 
     /// <summary>
     /// Marks the given register as free

@@ -225,11 +225,13 @@ public class Compiler
         registerManager.FreeRegister(source);
     }
 
-    private void GenerateAssignmentWithExplicitTypeCast(
-        SyntaxNode node, Value value, Value destination, Value source)
+    private void GenerateExplicitTypeCastMov(
+        SyntaxNode node, Value destination, Value value)
     {
         if (value.Type.Size > destination.Type.Size)
         {
+            Value converted;
+
             switch (value)
             {
                 case RegisterValue register:
@@ -238,22 +240,24 @@ public class Compiler
                         registerId, destination.Type
                     );
 
-                    assemblyGenerator.EmitInstruction(
-                        "mov", destination, convertedRegister
-                    );
+                    converted = new RegisterValue(destination.Type, convertedRegister);
                     break;
 
-                case SymbolValue :
-                    int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
-                    string convertedRegister = RegisterManager.GetRegisterNameFromId(
-                        registerId, destination.Type
-                    );
-
-                    assemblyGenerator.EmitInstruction(
-                        "mov", destination, convertedRegister
-                    );
+                case SymbolValue symbol:
+                    converted = symbol with { Type = destination.Type };
                     break;
+
+                case IntegerValue integer:
+                    converted = ConvertIntegerValue(node, integer, destination.Type, true);
+                    break;
+
+                default:
+                    throw new ArgumentException("Unexpected value class", nameof(value));
             }
+
+            assemblyGenerator.EmitInstruction("mov", destination, converted);
+            registerManager.FreeRegister(value);
+            return;
         }
 
         GenerateMov(node, destination, value);

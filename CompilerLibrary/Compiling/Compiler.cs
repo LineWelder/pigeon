@@ -473,14 +473,24 @@ public class Compiler
         {
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
-                Value right = CompileValue(Optimizer.OptimizeExpression(assignment.Right), left.Type);
+                SyntaxNode rightSyntax = Optimizer.OptimizeExpression(assignment.Right);
 
                 if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);
 
-                GenerateMov(assignment, left, right);
-
-                registerManager.FreeRegister(right);
+                if (rightSyntax is TypeCastNode typeCast
+                 && GetTypeInfo(typeCast.Type) == left.Type)
+                {
+                    GenerateExplicitTypeCastMov(
+                        assignment, left, CompileValue(typeCast.Value)
+                    );
+                }
+                else
+                {
+                    Value right = CompileValue(rightSyntax);
+                    GenerateMov(assignment, left, CompileValue(rightSyntax));
+                    registerManager.FreeRegister(right);
+                }
                 break;
 
             default:

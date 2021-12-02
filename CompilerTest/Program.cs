@@ -8,8 +8,6 @@ using CompilerLibrary.Tokenizing;
 
 namespace CompilerTest;
 
-// TODO Merge Compiler.GenerateMov and Compiler.GenerateTypeCast
-
 class Program
 {
     static void Main(string[] args)
@@ -17,11 +15,11 @@ class Program
         string code = @"
 i32 dword = 30;
 i16 word  = 29;
-i8  byte  = 8;
+u8  byte  = 8;
 
 main()
 {
-    word = (byte + 2):i8:i16;
+    byte = word:u8;
 }
 ";
 

@@ -9,6 +9,8 @@ internal class AssemblyGenerator
     private readonly StringBuilder textSection = new();
     private readonly StringBuilder dataSection = new();
 
+    private readonly StringBuilder currentFunction = new();
+
     public AssemblyGenerator() { }
 
     /// <summary>
@@ -49,8 +51,16 @@ internal class AssemblyGenerator
     /// </summary>
     /// <param name="opcode">The instruction opcode</param>
     /// <param name="arguments">The list of instuction arguments</param>
-    public void EmitInstruction(string opcode, params object[] arguments)
+    public void EmitInstructionToText(string opcode, params object[] arguments)
         => textSection.AppendLine($"\t{opcode}\t{string.Join(", ", arguments)}");
+
+    /// <summary>
+    /// Appends an instruction to the current function
+    /// </summary>
+    /// <param name="opcode">The instruction opcode</param>
+    /// <param name="arguments">The list of instuction arguments</param>
+    public void EmitInstruction(string opcode, params object[] arguments)
+        => currentFunction.AppendLine($"\t{opcode}\t{string.Join(", ", arguments)}");
 
     /// <summary>
     /// Appends a variable declaration to the .data section
@@ -60,6 +70,15 @@ internal class AssemblyGenerator
     /// <param name="value">The variable value</param>
     public void EmitVariable(string symbol, string declaration, object value)
         => dataSection.AppendLine($"{symbol} {declaration} {value}");
+
+    /// <summary>
+    /// Inserts the generated function code into the text section
+    /// </summary>
+    public void InsertFunctionCode()
+    {
+        textSection.Append(currentFunction);
+        currentFunction.Clear();
+    }
 
     /// <summary>
     /// Linkes all the separate sections into one assembly code

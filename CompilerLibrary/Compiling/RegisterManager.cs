@@ -26,7 +26,7 @@ internal class RegisterManager
     /// Returns the enumerable of the registers used in the current function
     /// </summary>
     public IEnumerable<string> Used
-        => from id in Enumerable.Range(0, used.Length)
+        => from id in Enumerable.Range(1, used.Length - 1)
            where used[id]
            select GetRegisterNameFromId(id, Compiler.COMPILED_TYPES["i32"]);
 

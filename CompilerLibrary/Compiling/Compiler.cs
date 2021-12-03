@@ -510,11 +510,28 @@ public class Compiler
 
         foreach (var pair in functions)
         {
-            assemblyGenerator.EmitSymbol(pair.Key);
             foreach (SyntaxNode node in pair.Value.Body)
             {
                 CompileStatement(node);
             }
+
+            assemblyGenerator.EmitSymbol(pair.Key);
+            assemblyGenerator.EmitInstructionToText("push", "ebp");
+            assemblyGenerator.EmitInstructionToText("mov", "ebp", "esp");
+            foreach (string register in registerManager.Used)
+            {
+                assemblyGenerator.EmitInstructionToText("push", register);
+            }
+
+            assemblyGenerator.InsertFunctionCode();
+
+            foreach (string register in registerManager.Used)
+            {
+                assemblyGenerator.EmitInstructionToText("pop", register);
+            }
+            assemblyGenerator.EmitInstructionToText("leave");
+            assemblyGenerator.EmitInstructionToText("ret");
+            registerManager.ResetUsedRegisters();
         }
 
         return assemblyGenerator.LinkAssembly();

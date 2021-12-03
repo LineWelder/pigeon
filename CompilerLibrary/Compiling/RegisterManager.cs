@@ -1,6 +1,9 @@
-﻿using CompilerLibrary.Compiling.Exceptions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using CompilerLibrary.Compiling.Exceptions;
 using CompilerLibrary.Parsing;
-using System;
 
 namespace CompilerLibrary.Compiling;
 
@@ -18,6 +21,14 @@ internal class RegisterManager
     /// Which registers are currently allocated
     /// </summary>
     private readonly bool[] allocated = new bool[4];
+
+    /// <summary>
+    /// Returns the enumerable of the registers used in the current function
+    /// </summary>
+    public IEnumerable<string> Used
+        => from id in Enumerable.Range(0, used.Length)
+           where used[id]
+           select GetRegisterNameFromId(id, Compiler.COMPILED_TYPES["i32"]);
 
     /// <summary>
     /// Returns the name of the register of the given size corresponding to the given id
@@ -81,13 +92,6 @@ internal class RegisterManager
     {
         Array.Fill(used, false);
     }
-
-    /// <summary>
-    /// Returns true if the given register was used in the current function
-    /// </summary>
-    /// <param name="id">The id of the register to check</param>
-    public bool WasUsed(int id)
-        => used[id];
 
     /// <summary>
     /// Marks the given register as free

@@ -349,6 +349,11 @@ public class Compiler
         }
     }
 
+    /// <summary>
+    /// Finds the variable of the given identifier
+    /// </summary>
+    /// <param name="identifier">The identifier of the variable to find</param>
+    /// <returns>SymbolValue representing the found variable</returns>
     private SymbolValue FindSymbol(IdentifierNode identifier)
     {
         if (!variables.TryGetValue(

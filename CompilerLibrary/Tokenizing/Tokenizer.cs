@@ -130,11 +130,22 @@ public class Tokenizer
                 NextCharacter();
             }
 
-            CurrentToken = new StringToken(
-                currentLocation,
-                TokenType.Identifier,
-                identifier.ToString()
-            );
+            string value = identifier.ToString();
+            if (KEYWORDS.TryGetValue(value, out TokenType tokenType))
+            {
+                CurrentToken = new Token(
+                    currentLocation,
+                    tokenType
+                );
+            }
+            else
+            {
+                CurrentToken = new StringToken(
+                    currentLocation,
+                    TokenType.Identifier,
+                    value
+                );
+            }
         }
 
         // Integer literal

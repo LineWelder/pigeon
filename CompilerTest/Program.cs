@@ -17,9 +17,9 @@ i32 dword = 30;
 i16 word  = 29;
 u8  byte  = 8;
 
-main()
+u8 main()
 {
-    byte = (dword + 2):u8;
+    return (dword + 2):u8;
 }
 ";
 

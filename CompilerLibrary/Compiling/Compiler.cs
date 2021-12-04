@@ -14,10 +14,10 @@ public class Compiler
     {
         { "i32", new TypeInfo(Size: 4, Name: "i32", Abbreviation: 'i', IsSigned: true) },
         { "i16", new TypeInfo(Size: 2, Name: "i16", Abbreviation: 's', IsSigned: true) },
-        { "i8",  new TypeInfo(Size: 1, Name: "i8",  Abbreviation: 'c', IsSigned: true) },
+        { "i8", new TypeInfo(Size: 1, Name: "i8", Abbreviation: 'c', IsSigned: true) },
         { "u32", new TypeInfo(Size: 4, Name: "u32", Abbreviation: 'd', IsSigned: false) },
         { "u16", new TypeInfo(Size: 2, Name: "u16", Abbreviation: 'w', IsSigned: false) },
-        { "u8",  new TypeInfo(Size: 1, Name: "u8",  Abbreviation: 'b', IsSigned: false) }
+        { "u8", new TypeInfo(Size: 1, Name: "u8", Abbreviation: 'b', IsSigned: false) }
     };
 
     private readonly Dictionary<string, VariableInfo> variables = new();
@@ -328,7 +328,7 @@ public class Compiler
             return value switch
             {
                 RegisterValue registerValue => CutRegister(registerValue, type),
-                SymbolValue                 => value with { Type = type },
+                SymbolValue => value with { Type = type },
                 _ => throw new ArgumentException("Unexpected value type"),
             };
         }
@@ -349,25 +349,46 @@ public class Compiler
         }
     }
 
+    private SymbolValue FindSymbol(IdentifierNode identifier)
+    {
+        if (!variables.TryGetValue(
+            AssemblyGenerator.GetAssemblySymbol(identifier.Value),
+            out VariableInfo variable
+        )) throw new UnknownIdentifierException(identifier);
+
+        return new SymbolValue(variable.Type, variable.AssemblySymbol);
+    }
+
     /// <summary>
     /// Evaluates the type of an expression
     /// </summary>
     /// <param name="node">The expression to evaluate type of</param>
-    public TypeInfo EvaluateType(SyntaxNode node)
+    /// <returns>The evaluated type, if cannot be evaluated - null</returns>
+    public TypeInfo? EvaluateType(SyntaxNode node)
     {
         switch (node)
         {
             case IdentifierNode identifier:
-                throw new NotImplementedException();
+                return FindSymbol(identifier).Type;
 
-            case IntegerNode integer:
-                throw new NotImplementedException();
+            case IntegerNode:
+                return null;
 
             case TypeCastNode typeCast:
-                throw new NotImplementedException();
+                return GetTypeInfo(typeCast.Type);
 
             case NegationNode negation:
-                throw new NotImplementedException();
+                TypeInfo? innerType = EvaluateType(negation.InnerExpression);
+                if (!(innerType?.IsSigned ?? true))
+                {
+                    throw new InvalidTypeCastException(
+                        negation.Location,
+                        innerType.Name, "a signed type",
+                        "cannot apply negation to an unsigned type"
+                    );
+                }
+
+                return innerType;
 
             case BinaryNode binary:
                 throw new NotImplementedException();
@@ -387,12 +408,7 @@ public class Compiler
         switch (node)
         {
             case IdentifierNode identifier:
-                if (!variables.TryGetValue(
-                    AssemblyGenerator.GetAssemblySymbol(identifier.Value),
-                    out VariableInfo variable
-                )) throw new UnknownIdentifierException(identifier);
-
-                return new SymbolValue(variable.Type, variable.AssemblySymbol);
+                return FindSymbol(identifier);
 
             case IntegerNode integer:
                 TypeInfo type = targetType;

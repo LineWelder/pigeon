@@ -29,8 +29,8 @@ main()
         Parser parser = new(tokenizer);
         Compiler compiler = new();
 
-        // try
-        // {
+        try
+        {
             SyntaxNode[] nodes = parser.ParseFile();
 
             // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
@@ -45,10 +45,10 @@ main()
 
             compiler.RegisterDeclarations(nodes);
             Console.WriteLine(compiler.CompileAll());
-        // }
-        // catch (CompilerException ex)
-        // {
-        //     Console.WriteLine(ex.Message);
-        // }
+        }
+        catch (CompilerException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 }

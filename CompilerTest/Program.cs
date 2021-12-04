@@ -19,7 +19,8 @@ u8  byte  = 8;
 
 u8 main()
 {
-    return (dword + 2):u8;
+    word = (dword + 2):i16;
+    return word:u8;
 }
 ";
 

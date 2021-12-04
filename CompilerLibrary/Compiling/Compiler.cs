@@ -520,6 +520,40 @@ public class Compiler
     }
 
     /// <summary>
+    /// Compiles the expression, and movs it's result into destination
+    /// </summary>
+    /// <param name="node">The node of the assignment</param>
+    /// <param name="destination">The location to mov the value into</param>
+    /// <param name="expression">The expression to get value from</param>
+    private void GenerateAssignment(SyntaxNode node, Value destination, SyntaxNode expression)
+    {
+        expression = Optimizer.OptimizeExpression(expression);
+        Value value;
+
+        if (expression is TypeCastNode typeCast)
+        {
+            TypeInfo typeInfo = GetTypeInfo(typeCast.Type);
+            if (typeInfo == destination.Type)
+            {
+                value = CompileValue(typeCast.Value, typeInfo);
+                GenerateMov(
+                    node,
+                    destination, value,
+                    true
+                );
+
+                goto endMov;
+            }
+        }
+
+        value = CompileValue(expression);
+        GenerateMov(node, destination, value);
+
+    endMov:
+        registerManager.FreeRegister(value);
+    }
+
+    /// <summary>
     /// Compiles a statement and appends the compiled assembly to the builder
     /// </summary>
     /// <param name="node">The statement to compile</param>
@@ -529,60 +563,22 @@ public class Compiler
         {
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
-                SyntaxNode rightSyntax = Optimizer.OptimizeExpression(assignment.Right);
-
                 if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);
 
-                if (rightSyntax is TypeCastNode typeCast)
-                {
-                    TypeInfo typeInfo = GetTypeInfo(typeCast.Type);
-                    if (typeInfo == left.Type)
-                    {
-                        GenerateMov(
-                            assignment,
-                            left, CompileValue(typeCast.Value, typeInfo),
-                            true
-                        );
-                    }
-                }
-                else
-                {
-                    Value right = CompileValue(rightSyntax);
-                    GenerateMov(assignment, left, right);
-                    registerManager.FreeRegister(right);
-                }
+                GenerateAssignment(assignment, left, assignment.Right);
                 break;
 
             case ReturnNode @return:
                 SyntaxNode innerSyntax = Optimizer.OptimizeExpression(@return.InnerExpression);
                 TypeInfo innerType = EvaluateType(innerSyntax);
+
                 RegisterValue returnRegister = new(
                     innerType,
                     RegisterManager.GetRegisterNameFromId(0, innerType)
                 );
 
-                if (innerSyntax is TypeCastNode returnTypeCast)
-                {
-                    TypeInfo typeInfo = GetTypeInfo(returnTypeCast.Type);
-                    if (typeInfo == returnRegister.Type)
-                    {
-                        GenerateMov(
-                            @return,
-                            returnRegister, CompileValue(returnTypeCast.Value, typeInfo),
-                            true
-                        );
-                    }
-                }
-                else
-                {
-                    Value innerValue = CompileValue(innerSyntax);
-                    GenerateMov(
-                        @return,
-                        returnRegister, innerValue
-                    );
-                    registerManager.FreeRegister(innerValue);
-                }
+                GenerateAssignment(@return, returnRegister, @return.InnerExpression);
                 break;
 
             default:

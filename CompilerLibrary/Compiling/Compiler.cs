@@ -23,6 +23,7 @@ public class Compiler
     private readonly Dictionary<string, VariableInfo> variables = new();
     private readonly Dictionary<string, FunctionInfo> functions = new();
 
+    private FunctionInfo currentFunction;
     private AssemblyGenerator assemblyGenerator;
     private RegisterManager registerManager;
 
@@ -570,12 +571,9 @@ public class Compiler
                 break;
 
             case ReturnNode @return:
-                SyntaxNode innerSyntax = Optimizer.OptimizeExpression(@return.InnerExpression);
-                TypeInfo innerType = EvaluateType(innerSyntax);
-
                 RegisterValue returnRegister = new(
-                    innerType,
-                    RegisterManager.GetRegisterNameFromId(0, innerType)
+                    currentFunction.ReturnType,
+                    RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
                 );
 
                 GenerateAssignment(@return, returnRegister, @return.InnerExpression);
@@ -605,6 +603,7 @@ public class Compiler
 
         foreach (var pair in functions)
         {
+            currentFunction = pair.Value;
             foreach (SyntaxNode node in pair.Value.Body)
             {
                 CompileStatement(node);

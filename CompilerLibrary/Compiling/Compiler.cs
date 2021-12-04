@@ -350,6 +350,34 @@ public class Compiler
     }
 
     /// <summary>
+    /// Evaluates the type of an expression
+    /// </summary>
+    /// <param name="node">The expression to evaluate type of</param>
+    public TypeInfo EvaluateType(SyntaxNode node)
+    {
+        switch (node)
+        {
+            case IdentifierNode identifier:
+                throw new NotImplementedException();
+
+            case IntegerNode integer:
+                throw new NotImplementedException();
+
+            case TypeCastNode typeCast:
+                throw new NotImplementedException();
+
+            case NegationNode negation:
+                throw new NotImplementedException();
+
+            case BinaryNode binary:
+                throw new NotImplementedException();
+
+            default:
+                throw new UnexpectedSyntaxNodeException(node, "expression");
+        }
+    }
+
+    /// <summary>
     /// Compiels an expression and appends the compiled assembly to the builder
     /// </summary>
     /// <param name="node">The expression to compile</param>

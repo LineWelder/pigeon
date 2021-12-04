@@ -396,7 +396,20 @@ public class Compiler
                 return innerType;
 
             case BinaryNode binary:
-                throw new NotImplementedException();
+                TypeInfo? leftType = EvaluateType(binary.Left);
+                TypeInfo? rightType = EvaluateType(binary.Right);
+
+                if (leftType.IsSigned != rightType.IsSigned)
+                {
+                    throw new InvalidTypeCastException(
+                        binary.Location,
+                        rightType.Name, leftType.Name,
+                        "operand types must be either both signed or unsigned"
+                    );
+                }
+
+                return (leftType?.Size ?? 0) > (rightType?.Size ?? 0)
+                    ? leftType : rightType;
 
             default:
                 throw new UnexpectedSyntaxNodeException(node, "expression");

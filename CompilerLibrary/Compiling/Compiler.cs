@@ -399,7 +399,8 @@ public class Compiler
                 TypeInfo? leftType = EvaluateType(binary.Left);
                 TypeInfo? rightType = EvaluateType(binary.Right);
 
-                if (leftType.IsSigned != rightType.IsSigned)
+                if (leftType is not null && rightType is not null
+                 && leftType?.IsSigned == rightType?.IsSigned)
                 {
                     throw new InvalidTypeCastException(
                         binary.Location,
@@ -470,8 +471,10 @@ public class Compiler
                 return inner;
 
             case BinaryNode binary:
-                Value left = CompileValue(binary.Left, targetType);
-                Value right = CompileValue(binary.Right, targetType);
+                TypeInfo resultType = EvaluateType(binary) ?? targetType;
+
+                Value left = CompileValue(binary.Left, resultType);
+                Value right = CompileValue(binary.Right, resultType);
 
                 if (left.Type.IsSigned != right.Type.IsSigned)
                 {
@@ -481,10 +484,6 @@ public class Compiler
                         "operand types must be either both signed or unsigned"
                     );
                 }
-
-                TypeInfo resultType = targetType
-                    ?? (left.Type.Size > right.Type.Size
-                        ? left.Type : right.Type);
 
                 if (left is not RegisterValue)
                 {

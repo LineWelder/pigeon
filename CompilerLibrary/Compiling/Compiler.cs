@@ -473,10 +473,17 @@ public class Compiler
                 if (left is not SymbolValue)
                     throw new NotLValueException(assignment.Left);
 
-                if (rightSyntax is TypeCastNode typeCast
-                 && GetTypeInfo(typeCast.Type) == left.Type)
+                if (rightSyntax is TypeCastNode typeCast)
                 {
-                    GenerateMov(assignment, left, CompileValue(typeCast.Value), true);
+                    TypeInfo typeInfo = GetTypeInfo(typeCast.Type);
+                    if (typeInfo == left.Type)
+                    {
+                        GenerateMov(
+                            assignment,
+                            left, CompileValue(typeCast.Value, typeInfo),
+                            true
+                        );
+                    }
                 }
                 else
                 {

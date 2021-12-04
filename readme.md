@@ -1,6 +1,5 @@
 # Pigeon - a simple programming language made for fun
 ## Features to implement
-- Function stack frames and register saving
 - Return statements and function calls
 - Function arguments
 - Local variables

@@ -14,10 +14,10 @@ public class Compiler
     {
         { "i32", new TypeInfo(Size: 4, Name: "i32", Abbreviation: 'i', IsSigned: true) },
         { "i16", new TypeInfo(Size: 2, Name: "i16", Abbreviation: 's', IsSigned: true) },
-        { "i8", new TypeInfo(Size: 1, Name: "i8", Abbreviation: 'c', IsSigned: true) },
+        { "i8",  new TypeInfo(Size: 1, Name: "i8",  Abbreviation: 'c', IsSigned: true) },
         { "u32", new TypeInfo(Size: 4, Name: "u32", Abbreviation: 'd', IsSigned: false) },
         { "u16", new TypeInfo(Size: 2, Name: "u16", Abbreviation: 'w', IsSigned: false) },
-        { "u8", new TypeInfo(Size: 1, Name: "u8", Abbreviation: 'b', IsSigned: false) }
+        { "u8",  new TypeInfo(Size: 1, Name: "u8",  Abbreviation: 'b', IsSigned: false) }
     };
 
     private readonly Dictionary<string, VariableInfo> variables = new();
@@ -551,6 +551,37 @@ public class Compiler
                     Value right = CompileValue(rightSyntax);
                     GenerateMov(assignment, left, right);
                     registerManager.FreeRegister(right);
+                }
+                break;
+
+            case ReturnNode @return:
+                SyntaxNode innerSyntax = Optimizer.OptimizeExpression(@return.InnerExpression);
+                TypeInfo innerType = EvaluateType(innerSyntax);
+                RegisterValue returnRegister = new(
+                    innerType,
+                    RegisterManager.GetRegisterNameFromId(0, innerType)
+                );
+
+                if (innerSyntax is TypeCastNode returnTypeCast)
+                {
+                    TypeInfo typeInfo = GetTypeInfo(returnTypeCast.Type);
+                    if (typeInfo == returnRegister.Type)
+                    {
+                        GenerateMov(
+                            @return,
+                            returnRegister, CompileValue(returnTypeCast.Value, typeInfo),
+                            true
+                        );
+                    }
+                }
+                else
+                {
+                    Value innerValue = CompileValue(innerSyntax);
+                    GenerateMov(
+                        @return,
+                        returnRegister, innerValue
+                    );
+                    registerManager.FreeRegister(innerValue);
                 }
                 break;
 

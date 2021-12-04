@@ -200,15 +200,29 @@ public class Parser
     /// <returns>The parsed node</returns>
     private SyntaxNode ParseStatement()
     {
-        SyntaxNode left = ParseExpression();
+        SyntaxNode result;
+        Token firstToken = tokenizer.CurrentToken;
 
-        Consume(TokenType.Equals, "=");
-
-        SyntaxNode right = ParseExpression();
+        if (firstToken.Type is TokenType.Return)
+        {
+            tokenizer.NextToken();
+            result = new ReturnNode(
+                firstToken.Location,
+                ParseExpression()
+            );
+        }
+        else
+        {
+            SyntaxNode left = ParseExpression();
+            Consume(TokenType.Equals, "=");
+            result = new AssignmentNode(
+                left.Location, left,
+                Right: ParseExpression()
+            );
+        }
 
         Consume(TokenType.Semicolon, ";");
-
-        return new AssignmentNode(left.Location, left, right);
+        return result;
     }
 
     /// <summary>

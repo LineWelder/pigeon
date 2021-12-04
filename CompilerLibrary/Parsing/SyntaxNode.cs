@@ -83,3 +83,11 @@ public record AssignmentNode(
     Location Location,
     SyntaxNode Left, SyntaxNode Right
 ) : SyntaxNode(Location);
+
+/// <summary>
+/// Represents a return statement
+/// </summary>
+public record ReturnNode(
+    Location Location,
+    SyntaxNode InnerExpression
+) : SyntaxNode(Location);

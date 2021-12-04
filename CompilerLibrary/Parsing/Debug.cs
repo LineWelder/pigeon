@@ -123,6 +123,13 @@ public static class Debug
 
                 break;
 
+            case ReturnNode @return:
+                Console.Write("return ");
+                PrintSyntaxNode(@return.InnerExpression);
+                Console.Write(';');
+
+                break;
+
             default:
                 Console.Write(node);
                 break;

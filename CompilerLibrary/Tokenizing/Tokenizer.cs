@@ -26,6 +26,11 @@ public class Tokenizer
         { ':', TokenType.Colon }
     };
 
+    private static readonly Dictionary<string, TokenType> KEYWORDS = new()
+    {
+        { "return", TokenType.Return }
+    };
+
     /// <summary>
     /// Becomes true when the tokenizer reaches the EOF
     /// </summary>

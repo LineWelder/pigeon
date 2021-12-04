@@ -10,7 +10,8 @@ public enum TokenType
     LeftParenthesis, RightParenthesis,
     LeftCurlyBrace, RightCurlyBrace,
     Coma, Semicolon,
-    Colon
+    Colon,
+    Return
 }
 
 /// <summary>

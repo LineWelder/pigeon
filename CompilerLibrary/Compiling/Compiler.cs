@@ -373,12 +373,22 @@ public class Compiler
     /// <returns>SymbolValue representing the found variable</returns>
     private SymbolValue FindSymbol(IdentifierNode identifier)
     {
-        if (!variables.TryGetValue(
-            AssemblyGenerator.GetAssemblySymbol(identifier.Value),
-            out VariableInfo variable
-        )) throw new UnknownIdentifierException(identifier);
-
-        return new SymbolValue(variable.Type, variable.AssemblySymbol);
+        string symbol = AssemblyGenerator.GetAssemblySymbol(identifier.Value);
+        if (variables.TryGetValue(symbol, out VariableInfo variable))
+        {
+            return new SymbolValue(variable.Type, variable.AssemblySymbol);
+        }
+        else if (functions.TryGetValue(symbol, out FunctionInfo function))
+        {
+            return new SymbolValue(
+                new FunctionPointerTypeInfo(function),
+                function.AssemblySymbol
+            );
+        }
+        else
+        {
+            throw new UnknownIdentifierException(identifier);
+        }
     }
 
     /// <summary>

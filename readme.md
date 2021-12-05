@@ -3,11 +3,12 @@
 - Return statements and function calls
 - Function arguments
 - Local variables
-- Branching and loops
-- Pointers
-- Strings
 - Global initializations, _start and i32 main()
 - Command line interface
+- Branching and loops
+- Pointers
+- Arrays
+- Strings
 - Dll imports
 - Implement multiplication and division
 - Function pointers
@@ -30,7 +31,18 @@ func()
 ```
 Declares a function named `func` that doesn't return any value. Analog of void functions in C.
 Inside the curly braces expected statements - the code that should be executed whenever the
-function is called (Function calls aren't implemented yet!)
+function is called (Function calls are not implemented yet!).
+Inside such a function `return;` statement can be used to immediately end the function
+execution
+## Returning values from functions
+```
+i16 test_add_2()
+{
+    return test + 2;
+}
+```
+The return statement ends current function execution. The returned value becomes the value
+of the function call, so `test_add_2()` will be `31`
 ### Variable assignment
 ```
 test = 2 + test;

@@ -184,14 +184,6 @@ public class Compiler
         SyntaxNode node, Value destination,
         Value source, bool explicitTypeCast = false)
     {
-        // We cannot transfer data from a variable to another directly
-        if (source is SymbolValue && destination is not RegisterValue)
-        {
-            RegisterValue transferRegister = registerManager.AllocateRegister(node, source.Type);
-            assemblyGenerator.EmitInstruction("mov", transferRegister, source);
-            source = transferRegister;
-        }
-
         if (!explicitTypeCast && destination.Type.IsSigned != source.Type.IsSigned)
         {
             throw new InvalidTypeCastException(
@@ -199,6 +191,27 @@ public class Compiler
                 source.Type.Name, destination.Type.Name,
                 "the types must be either both signed or unsigned"
             );
+        }
+
+        if (!explicitTypeCast && destination.Type.Size < source.Type.Size)
+        {
+            throw new InvalidTypeCastException(
+                node.Location, source.Type.Name, destination.Type.Name,
+                "possible value loss"
+            );
+        }
+
+        if (destination == source)
+        {
+            return;
+        }
+
+        // We cannot transfer data from a variable to another directly
+        if (source is SymbolValue && destination is not RegisterValue)
+        {
+            RegisterValue transferRegister = registerManager.AllocateRegister(node, source.Type);
+            assemblyGenerator.EmitInstruction("mov", transferRegister, source);
+            source = transferRegister;
         }
 
         if (source is IntegerValue integerValue)
@@ -220,16 +233,7 @@ public class Compiler
         }
         else
         {
-            if (!explicitTypeCast)
-            {
-                throw new InvalidTypeCastException(
-                    node.Location, source.Type.Name, destination.Type.Name,
-                    "possible value loss"
-                );
-            }
-
             Value converted;
-
             switch (source)
             {
                 case RegisterValue register:
@@ -251,6 +255,11 @@ public class Compiler
 
                 default:
                     throw new ArgumentException("Unexpected value class", nameof(source));
+            }
+
+            if (destination == converted)
+            {
+                return;
             }
 
             assemblyGenerator.EmitInstruction("mov", destination, converted);
@@ -582,8 +591,6 @@ public class Compiler
                     currentFunction.ReturnType,
                     RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
                 );
-
-                
 
                 if (@return.InnerExpression is not null)
                 {

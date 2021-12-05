@@ -8,6 +8,8 @@ using CompilerLibrary.Tokenizing;
 
 namespace CompilerTest;
 
+// TODO dword = 29;
+
 class Program
 {
     static void Main(string[] args)
@@ -17,12 +19,10 @@ i32 dword = 30;
 i16 word  = 29;
 u8  byte  = 8;
 
-main()
+u8 main()
 {
-    word = (dword + 2):i16;
-    byte = word:u8;
-    return;
-    dword = byte:i32;
+    word = word;
+    return (word + 2):u8;
 }
 ";
 

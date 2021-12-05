@@ -5,7 +5,9 @@ internal record Value(TypeInfo Type);
 internal record SymbolValue(TypeInfo Type, string Symbol)
     : Value(Type)
 {
-    public override string ToString() => $"{Type.AssemblyName} ptr [{Symbol}]";
+    public override string ToString()
+        => Type is FunctionPointerTypeInfo
+               ? Symbol : $"{Type.AssemblyName} ptr [{Symbol}]";
 }
 
 internal record RegisterValue(TypeInfo Type, string Name)

@@ -89,5 +89,5 @@ public record AssignmentNode(
 /// </summary>
 public record ReturnNode(
     Location Location,
-    SyntaxNode InnerExpression
+    SyntaxNode? InnerExpression
 ) : SyntaxNode(Location);

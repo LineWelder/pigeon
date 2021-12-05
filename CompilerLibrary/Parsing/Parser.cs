@@ -206,6 +206,12 @@ public class Parser
         if (firstToken.Type is TokenType.Return)
         {
             tokenizer.NextToken();
+            if (tokenizer.CurrentToken.Type is TokenType.Semicolon)
+            {
+                tokenizer.NextToken();
+                return new ReturnNode(firstToken.Location, null);
+            }
+
             result = new ReturnNode(
                 firstToken.Location,
                 ParseExpression()

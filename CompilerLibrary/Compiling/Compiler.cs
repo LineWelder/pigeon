@@ -576,7 +576,11 @@ public class Compiler
                     RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
                 );
 
-                GenerateAssignment(@return, returnRegister, @return.InnerExpression);
+                if (@return.InnerExpression is not null)
+                {
+                    GenerateAssignment(@return, returnRegister, @return.InnerExpression);
+                }
+
                 assemblyGenerator.EmitInstruction("jmp", $"end{currentFunction.AssemblySymbol}");
                 break;
 

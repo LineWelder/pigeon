@@ -130,6 +130,11 @@ public static class Debug
 
                 break;
 
+            case FunctionCallNode functionCall:
+                PrintSyntaxNode(functionCall.Function);
+                Console.Write("()");
+                break;
+
             default:
                 Console.Write(node);
                 break;

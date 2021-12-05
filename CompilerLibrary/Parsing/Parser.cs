@@ -109,13 +109,27 @@ public class Parser
             );
         }
 
-        while (tokenizer.CurrentToken.Type is TokenType.Colon)
+    lookForPostfix:
+        switch (tokenizer.CurrentToken.Type)
         {
-            tokenizer.NextToken();
-            result = new TypeCastNode(
-                result.Location,
-                result, ParseType()
-            );
+            case TokenType.Colon:
+                tokenizer.NextToken();
+                result = new TypeCastNode(
+                    result.Location,
+                    result, ParseType()
+                );
+
+                goto lookForPostfix;
+
+            case TokenType.LeftParenthesis:
+                tokenizer.NextToken();
+                result = new FunctionCallNode(
+                    result.Location,
+                    result
+                );
+
+                Consume(TokenType.RightParenthesis, ")");
+                goto lookForPostfix;
         }
 
         return result;

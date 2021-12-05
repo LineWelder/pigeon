@@ -77,6 +77,14 @@ public record TypeCastNode(
 ) : SyntaxNode(Location);
 
 /// <summary>
+/// Represents an explicit type cast expression
+/// </summary>
+public record FunctionCallNode(
+    Location Location,
+    SyntaxNode Function
+) : SyntaxNode(Location);
+
+/// <summary>
 /// Represents an assignment statement
 /// </summary>
 public record AssignmentNode(

@@ -596,7 +596,10 @@ public class Compiler
                     GenerateAssignment(@return, returnRegister, @return.InnerExpression);
                 }
 
-                assemblyGenerator.EmitInstruction("jmp", $"end{currentFunction.AssemblySymbol}");
+                if (@return != currentFunction.Body[^1])
+                {
+                    assemblyGenerator.EmitInstruction("jmp", $"end{currentFunction.AssemblySymbol}");
+                }
                 break;
 
             default:

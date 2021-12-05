@@ -158,7 +158,7 @@ public class Compiler
             {
                 throw new InvalidTypeCastException(
                     node.Location,
-                    value?.Type?.Name ?? "bigger integer size", type.Name,
+                    value?.Type?.Name ?? "bigger integer type", type.Name,
                     "possible value loss"
                 );
             }
@@ -453,7 +453,7 @@ public class Compiler
                 {
                     throw new InvalidTypeCastException(
                         integer.Location,
-                        "bigger integer size", targetType.Name,
+                        "bigger integer type", targetType.Name,
                         "possible value loss"
                     );
                 }

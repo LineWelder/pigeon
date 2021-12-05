@@ -558,7 +558,7 @@ public class Compiler
             }
         }
 
-        value = CompileValue(expression);
+        value = CompileValue(expression, destination.Type);
         GenerateMov(node, destination, value);
 
     endMov:

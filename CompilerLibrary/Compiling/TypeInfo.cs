@@ -55,3 +55,6 @@ public record TypeInfo(
     /// </summary>
     public string AssemblyDeclaration => $"d{ASSEMBLY_TYPES[Size][0]}";
 }
+
+public record FunctionPointerTypeInfo(FunctionInfo FunctionInfo)
+    : TypeInfo(Size: 4, Name: $"{FunctionInfo.ReturnType.Name}()", IsSigned: false);

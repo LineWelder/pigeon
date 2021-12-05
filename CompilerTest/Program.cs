@@ -21,9 +21,7 @@ u8  byte  = 8;
 
 i16 main()
 {
-    return word;
-    word = word + 2;
-    return word;
+    return word + 2;
 }
 ";
 

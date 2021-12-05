@@ -24,6 +24,8 @@ public class Compiler
     private readonly Dictionary<string, FunctionInfo> functions = new();
 
     private FunctionInfo currentFunction;
+    private bool needsEndingLabel;
+
     private AssemblyGenerator assemblyGenerator;
     private RegisterManager registerManager;
 
@@ -599,6 +601,7 @@ public class Compiler
                 if (@return != currentFunction.Body[^1])
                 {
                     assemblyGenerator.EmitInstruction("jmp", $"end{currentFunction.AssemblySymbol}");
+                    needsEndingLabel = true;
                 }
                 break;
 
@@ -627,11 +630,14 @@ public class Compiler
         foreach (var pair in functions)
         {
             currentFunction = pair.Value;
+            needsEndingLabel = false;
+
             foreach (SyntaxNode node in pair.Value.Body)
             {
                 CompileStatement(node);
             }
 
+            // Beginning
             assemblyGenerator.EmitSymbol(pair.Key);
             assemblyGenerator.EmitInstructionToText("push", "ebp");
             assemblyGenerator.EmitInstructionToText("mov", "ebp", "esp");
@@ -640,15 +646,21 @@ public class Compiler
                 assemblyGenerator.EmitInstructionToText("push", register);
             }
 
+            // Code
             assemblyGenerator.InsertFunctionCode();
 
-            assemblyGenerator.EmitSymbol($"end{currentFunction.AssemblySymbol}");
+            // Ending
+            if (needsEndingLabel)
+            {
+                assemblyGenerator.EmitSymbol($"end{currentFunction.AssemblySymbol}");
+            }
             foreach (string register in registerManager.Used)
             {
                 assemblyGenerator.EmitInstructionToText("pop", register);
             }
             assemblyGenerator.EmitInstructionToText("leave");
             assemblyGenerator.EmitInstructionToText("ret");
+
             registerManager.ResetUsedRegisters();
         }
 

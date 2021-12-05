@@ -577,6 +577,7 @@ public class Compiler
                 );
 
                 GenerateAssignment(@return, returnRegister, @return.InnerExpression);
+                assemblyGenerator.EmitInstruction("jmp", $"end{currentFunction.AssemblySymbol}");
                 break;
 
             default:
@@ -619,6 +620,7 @@ public class Compiler
 
             assemblyGenerator.InsertFunctionCode();
 
+            assemblyGenerator.EmitSymbol($"end{currentFunction.AssemblySymbol}");
             foreach (string register in registerManager.Used)
             {
                 assemblyGenerator.EmitInstructionToText("pop", register);

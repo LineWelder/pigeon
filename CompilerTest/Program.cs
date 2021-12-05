@@ -17,9 +17,9 @@ i32 dword = 30;
 i16 word  = 29;
 u8  byte  = 8;
 
-main()
+u8 main()
 {
-    dword = 29;
+    return -1:u8;
 }
 ";
 
@@ -29,8 +29,8 @@ main()
         Parser parser = new(tokenizer);
         Compiler compiler = new();
 
-        try
-        {
+        // try
+        // {
             SyntaxNode[] nodes = parser.ParseFile();
 
             // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
@@ -45,10 +45,10 @@ main()
 
             compiler.RegisterDeclarations(nodes);
             Console.WriteLine(compiler.CompileAll());
-        }
-        catch (CompilerException ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
+        // }
+        // catch (CompilerException ex)
+        // {
+        //     Console.WriteLine(ex.Message);
+        // }
     }
 }

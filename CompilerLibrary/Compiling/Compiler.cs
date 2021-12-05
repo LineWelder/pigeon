@@ -141,7 +141,9 @@ public class Compiler
         SyntaxNode node, IntegerValue value, TypeInfo type, bool explicitly = false
     )
     {
-        if (value.Type.IsSigned != type.IsSigned && value.Value < 0)
+        if (value.Type is not null
+         && value.Type.IsSigned != type.IsSigned
+         && value.Value < 0)
         {
             throw new InvalidTypeCastException(
                 node.Location,
@@ -156,7 +158,7 @@ public class Compiler
             {
                 throw new InvalidTypeCastException(
                     node.Location,
-                    value.Type.Name, type.Name,
+                    value?.Type?.Name ?? "bigger integer size", type.Name,
                     "possible value loss"
                 );
             }
@@ -219,7 +221,10 @@ public class Compiler
         if (source is IntegerValue integerValue)
         {
             assemblyGenerator.EmitInstruction(
-                "mov", destination, ConvertIntegerValue(node, integerValue, destination.Type)
+                "mov", destination,
+                ConvertIntegerValue(
+                    node, integerValue, destination.Type, explicitTypeCast
+                )
             );
         }
         else if (destination.Type.Size == source.Type.Size)
@@ -442,15 +447,18 @@ public class Compiler
                 return FindSymbol(identifier);
 
             case IntegerNode integer:
-                TypeInfo type = targetType;
-                if (integer.Value > type.MaximumValue || integer.Value < type.MinimumValue)
+                if (targetType is not null
+                 && (integer.Value > targetType.MaximumValue
+                  || integer.Value < targetType.MinimumValue))
+                {
                     throw new InvalidTypeCastException(
                         integer.Location,
-                        "bigger integer size", type.Name,
+                        "bigger integer size", targetType.Name,
                         "possible value loss"
                     );
+                }
 
-                return new IntegerValue(type, integer.Value);
+                return new IntegerValue(targetType, integer.Value);
 
             case TypeCastNode typeCast:
                 TypeInfo castInto = GetTypeInfo(typeCast.Type);
@@ -547,7 +555,7 @@ public class Compiler
             TypeInfo typeInfo = GetTypeInfo(typeCast.Type);
             if (typeInfo == destination.Type)
             {
-                value = CompileValue(typeCast.Value, typeInfo);
+                value = CompileValue(typeCast.Value);
                 GenerateMov(
                     node,
                     destination, value,

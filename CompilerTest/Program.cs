@@ -6,13 +6,7 @@ using CompilerLibrary.Compiling;
 using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
-namespace CompilerTest;
-
-class Program
-{
-    static void Main(string[] args)
-    {
-        string code = @"
+const string code = @"
 i32 dword = 30;
 i16 word  = 29;
 u8  byte  = 8;
@@ -23,32 +17,30 @@ u8 main()
 }
 ";
 
-        byte[] byteArray = Encoding.ASCII.GetBytes(code);
-        MemoryStream stream = new(byteArray);
-        Tokenizer tokenizer = new("<string>", new StreamReader(stream));
-        Parser parser = new(tokenizer);
-        Compiler compiler = new();
+byte[] byteArray = Encoding.ASCII.GetBytes(code);
+MemoryStream stream = new(byteArray);
+Tokenizer tokenizer = new("<string>", new StreamReader(stream));
+Parser parser = new(tokenizer);
+Compiler compiler = new();
 
-        // try
-        // {
-            SyntaxNode[] nodes = parser.ParseFile();
+try
+{
+    SyntaxNode[] nodes = parser.ParseFile();
 
-            // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
-            // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
-            // SyntaxNode expression = assignment?.Right;
-            // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
-            // 
-            // Debug.PrintSyntaxNode(expression);
-            // Console.WriteLine();
-            // Debug.PrintSyntaxNode(optimized);
-            // Console.WriteLine();
+    // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
+    // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
+    // SyntaxNode expression = assignment?.Right;
+    // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
+    // 
+    // Debug.PrintSyntaxNode(expression);
+    // Console.WriteLine();
+    // Debug.PrintSyntaxNode(optimized);
+    // Console.WriteLine();
 
-            compiler.RegisterDeclarations(nodes);
-            Console.WriteLine(compiler.CompileAll());
-        // }
-        // catch (CompilerException ex)
-        // {
-        //     Console.WriteLine(ex.Message);
-        // }
-    }
+    compiler.RegisterDeclarations(nodes);
+    Console.WriteLine(compiler.CompileAll());
+}
+catch (CompilerException ex)
+{
+    Console.WriteLine(ex.Message);
 }

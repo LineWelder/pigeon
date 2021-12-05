@@ -11,6 +11,8 @@ internal class AssemblyGenerator
 
     private readonly StringBuilder currentFunction = new();
 
+    private int nextLabelId = 0;
+
     public AssemblyGenerator() { }
 
     /// <summary>
@@ -61,6 +63,16 @@ internal class AssemblyGenerator
     /// <param name="arguments">The list of instuction arguments</param>
     public void EmitInstruction(string opcode, params object[] arguments)
         => currentFunction.AppendLine($"\t{opcode}\t{string.Join(", ", arguments)}");
+
+    /// <summary>
+    /// Creates a new label pointing to the next instruction
+    /// </summary>
+    public string EmitLabel()
+    {
+        string label = $".L{nextLabelId++}";
+        EmitSymbol(label);
+        return label;
+    }
 
     /// <summary>
     /// Appends a variable declaration to the .data section

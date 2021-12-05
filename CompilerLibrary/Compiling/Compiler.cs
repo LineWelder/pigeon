@@ -500,6 +500,26 @@ public class Compiler
                 assemblyGenerator.EmitInstruction("neg", inner);
                 return inner;
 
+            case FunctionCallNode functionCall:
+                Value function = CompileValue(functionCall.Function);
+                if (function.Type is not FunctionPointerTypeInfo functionType)
+                {
+                    throw new InvalidTypeCastException(
+                        functionCall.Location,
+                        function.Type.Name, "function type",
+                        "uncallable type"
+                    );
+                }
+
+                assemblyGenerator.EmitInstruction("call", function);
+
+                return new RegisterValue(
+                    functionType.FunctionInfo.ReturnType,
+                    RegisterManager.GetRegisterNameFromId(
+                        0, functionType.FunctionInfo.ReturnType
+                    )
+                );
+
             case BinaryNode binary:
                 TypeInfo resultType = EvaluateType(binary) ?? targetType;
 

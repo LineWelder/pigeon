@@ -587,13 +587,12 @@ public class Compiler
                     );
                 }
 
-                RegisterValue returnRegister = new(
-                    currentFunction.ReturnType,
-                    RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
-                );
-
                 if (@return.InnerExpression is not null)
                 {
+                    RegisterValue returnRegister = new(
+                        currentFunction.ReturnType,
+                        RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
+                    );
                     GenerateAssignment(@return, returnRegister, @return.InnerExpression);
                 }
 

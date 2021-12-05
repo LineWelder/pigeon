@@ -34,7 +34,7 @@ Inside the curly braces expected statements - the code that should be executed w
 function is called (Function calls are not implemented yet!).
 Inside such a function `return;` statement can be used to immediately end the function
 execution
-## Returning values from functions
+#### Returning values from functions
 ```
 i16 test_add_2()
 {

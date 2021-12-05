@@ -571,10 +571,19 @@ public class Compiler
                 break;
 
             case ReturnNode @return:
+                if (@return.InnerExpression is null != currentFunction.ReturnType is null)
+                {
+                    throw new MismatchingReturnException(
+                        @return.Location, currentFunction.ReturnType
+                    );
+                }
+
                 RegisterValue returnRegister = new(
                     currentFunction.ReturnType,
                     RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
                 );
+
+                
 
                 if (@return.InnerExpression is not null)
                 {

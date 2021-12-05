@@ -12,12 +12,12 @@ public class Compiler
 {
     internal static readonly Dictionary<string, TypeInfo> COMPILED_TYPES = new()
     {
-        { "i32", new TypeInfo(Size: 4, Name: "i32", Abbreviation: 'i', IsSigned: true) },
-        { "i16", new TypeInfo(Size: 2, Name: "i16", Abbreviation: 's', IsSigned: true) },
-        { "i8",  new TypeInfo(Size: 1, Name: "i8",  Abbreviation: 'c', IsSigned: true) },
-        { "u32", new TypeInfo(Size: 4, Name: "u32", Abbreviation: 'd', IsSigned: false) },
-        { "u16", new TypeInfo(Size: 2, Name: "u16", Abbreviation: 'w', IsSigned: false) },
-        { "u8",  new TypeInfo(Size: 1, Name: "u8",  Abbreviation: 'b', IsSigned: false) }
+        { "i32", new TypeInfo(Size: 4, Name: "i32", IsSigned: true) },
+        { "i16", new TypeInfo(Size: 2, Name: "i16", IsSigned: true) },
+        { "i8",  new TypeInfo(Size: 1, Name: "i8",  IsSigned: true) },
+        { "u32", new TypeInfo(Size: 4, Name: "u32", IsSigned: false) },
+        { "u16", new TypeInfo(Size: 2, Name: "u16", IsSigned: false) },
+        { "u8",  new TypeInfo(Size: 1, Name: "u8",  IsSigned: false) }
     };
 
     private readonly Dictionary<string, VariableInfo> variables = new();
@@ -62,7 +62,7 @@ public class Compiler
             );
         }
 
-        string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(function);
+        string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(function.Identifier);
 
         functions.Add(assemblySymbol, new FunctionInfo(
             function.Location,

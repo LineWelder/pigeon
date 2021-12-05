@@ -7,8 +7,7 @@ namespace CompilerLibrary.Compiling;
 /// Size is given in bytes
 /// </summary>
 public record TypeInfo(
-    uint Size, string Name,
-    char Abbreviation, bool IsSigned
+    uint Size, string Name, bool IsSigned
 )
 {
     private static readonly Dictionary<uint, string> ASSEMBLY_TYPES = new()

@@ -18,7 +18,7 @@ i32 test()
 
 u8 main()
 {
-    dword = test();
+    dword = 2 + test();
 }
 ";
 
@@ -28,24 +28,24 @@ Tokenizer tokenizer = new("<string>", new StreamReader(stream));
 Parser parser = new(tokenizer);
 Compiler compiler = new();
 
-try
-{
+// try
+// {
     SyntaxNode[] nodes = parser.ParseFile();
 
-    // FunctionDeclarationNode main = nodes[3] as FunctionDeclarationNode;
-    // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
-    // SyntaxNode expression = assignment?.Right;
+    FunctionDeclarationNode main = nodes[4] as FunctionDeclarationNode;
+    AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
+    SyntaxNode expression = assignment?.Right;
     // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
-    // 
-    // Debug.PrintSyntaxNode(expression);
-    // Console.WriteLine();
+    
+    Debug.PrintSyntaxNode(expression);
+    Console.WriteLine();
     // Debug.PrintSyntaxNode(optimized);
     // Console.WriteLine();
 
     compiler.RegisterDeclarations(nodes);
     Console.WriteLine(compiler.CompileAll());
-}
-catch (CompilerException ex)
-{
-    Console.WriteLine(ex.Message);
-}
+// }
+// catch (CompilerException ex)
+// {
+//     Console.WriteLine(ex.Message);
+// }

@@ -23,25 +23,6 @@ internal class AssemblyGenerator
         => $"_{name}";
 
     /// <summary>
-    /// Returns the assembly symbol for function declaration
-    /// </summary>
-    /// <returns></returns>
-    public static string GetAssemblySymbol(FunctionDeclarationNode function)
-    {
-        StringBuilder builder = new(
-            "_", 2 + function.Identifier.Length + function.ArgumentList.Length
-        );
-
-        builder.Append(function.Identifier);
-        if (function.ArgumentList.Length > 0)
-            builder.Append('@');
-        foreach (FunctionArgumentDeclarationNode argument in function.ArgumentList)
-            builder.Append(Compiler.GetTypeInfo(argument.Type).Abbreviation);
-
-        return builder.ToString();
-    }
-
-    /// <summary>
     /// Appends a symbol (label) to the .text section
     /// </summary>
     /// <param name="symbol">The symbol</param>

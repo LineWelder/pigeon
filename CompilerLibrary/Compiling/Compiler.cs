@@ -457,6 +457,56 @@ public class Compiler
         }
     }
 
+    private Value GenerateFunctionCall(SyntaxNode node, Value function)
+    {
+        if (function.Type is not FunctionPointerTypeInfo functionType)
+        {
+            throw new InvalidTypeCastException(
+                node.Location,
+                function.Type.Name, "function type",
+                "uncallable type"
+            );
+        }
+
+        // The register the function result is returned in
+        RegisterValue expectedReturnRegister = new(
+            functionType.FunctionInfo.ReturnType,
+            RegisterManager.GetRegisterNameFromId(
+                0, functionType.FunctionInfo.ReturnType
+            )
+        );
+
+        // Allocating a register for the result
+        // If the allocated register is eax, ax, etc., it means that
+        // it was free, and can be used
+        // Otherwise the returned value will be moved into
+        // the allocated register
+        RegisterValue actualReturnRegister = registerManager.AllocateRegister(
+            node, functionType.FunctionInfo.ReturnType
+        );
+
+        // If eax, ax, etc. was not free, its value is saved
+        if (expectedReturnRegister != actualReturnRegister)
+        {
+            assemblyGenerator.EmitInstruction(
+                "mov", actualReturnRegister, expectedReturnRegister
+            );
+        }
+
+        assemblyGenerator.EmitInstruction("call", function);
+
+        // Swaping the register values to mov the function result into
+        // the resultRegister, and return the previous value of eax, ax, etc. 
+        if (expectedReturnRegister != actualReturnRegister)
+        {
+            assemblyGenerator.EmitInstruction(
+                "xchg", actualReturnRegister, expectedReturnRegister
+            );
+        }
+
+        return actualReturnRegister;
+    }
+
     /// <summary>
     /// Compiels an expression and appends the compiled assembly to the builder
     /// </summary>
@@ -515,23 +565,7 @@ public class Compiler
 
             case FunctionCallNode functionCall:
                 Value function = CompileValue(functionCall.Function);
-                if (function.Type is not FunctionPointerTypeInfo functionType)
-                {
-                    throw new InvalidTypeCastException(
-                        functionCall.Location,
-                        function.Type.Name, "function type",
-                        "uncallable type"
-                    );
-                }
-
-                assemblyGenerator.EmitInstruction("call", function);
-
-                return new RegisterValue(
-                    functionType.FunctionInfo.ReturnType,
-                    RegisterManager.GetRegisterNameFromId(
-                        0, functionType.FunctionInfo.ReturnType
-                    )
-                );
+                return GenerateFunctionCall(functionCall, function);
 
             case BinaryNode binary:
                 TypeInfo resultType = EvaluateType(binary) ?? targetType;

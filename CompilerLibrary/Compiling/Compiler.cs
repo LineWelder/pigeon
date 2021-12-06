@@ -440,7 +440,7 @@ public class Compiler
                 TypeInfo? rightType = EvaluateType(binary.Right);
 
                 if (leftType is not null && rightType is not null
-                 && leftType?.IsSigned == rightType?.IsSigned)
+                 && leftType.IsSigned != rightType.IsSigned)
                 {
                     throw new InvalidTypeCastException(
                         binary.Location,

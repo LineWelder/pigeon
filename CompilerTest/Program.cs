@@ -18,7 +18,7 @@ i32 test()
 
 u8 main()
 {
-    dword = test();
+    dword = word + test();
 }
 ";
 

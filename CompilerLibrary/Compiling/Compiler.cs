@@ -457,6 +457,12 @@ public class Compiler
         }
     }
 
+    /// <summary>
+    /// Generates a function call
+    /// </summary>
+    /// <param name="node">The node the call happens within</param>
+    /// <param name="function">The function to call</param>
+    /// <returns>The location of the returned value</returns>
     private Value GenerateFunctionCall(SyntaxNode node, Value function)
     {
         if (function.Type is not FunctionPointerTypeInfo functionType)

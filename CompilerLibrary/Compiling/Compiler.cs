@@ -422,6 +422,19 @@ public class Compiler
 
                 return innerType;
 
+            case FunctionCallNode functionCall:
+                TypeInfo function = EvaluateType(functionCall.Function);
+                if (function is not FunctionPointerTypeInfo functionType)
+                {
+                    throw new InvalidTypeCastException(
+                        functionCall.Location,
+                        function.Name, "function type",
+                        "uncallable type"
+                    );
+                }
+
+                return functionType.FunctionInfo.ReturnType;
+
             case BinaryNode binary:
                 TypeInfo? leftType = EvaluateType(binary.Left);
                 TypeInfo? rightType = EvaluateType(binary.Right);

@@ -1,6 +1,5 @@
 # Pigeon - a simple programming language made for fun
 ## Features to implement
-- Return statements and function calls
 - Function arguments
 - Local variables
 - Global initializations, _start and i32 main()
@@ -22,7 +21,7 @@ Where the number is type's size in bits
 i16 test = 29;
 ```
 Declares a global variable named `test` of type `i16` and initializes it with `29`
-### Functions (Work in progress!)
+### Functions
 ```
 func()
 {
@@ -31,7 +30,7 @@ func()
 ```
 Declares a function named `func` that doesn't return any value. Analog of void functions in C.
 Inside the curly braces expected statements - the code that should be executed whenever the
-function is called (Function calls are not implemented yet!).
+function is called.
 Inside such a function `return;` statement can be used to immediately end the function
 execution
 #### Returning values from functions
@@ -43,6 +42,15 @@ i16 test_add_2()
 ```
 The return statement ends current function execution. The returned value becomes the value
 of the function call, so `test_add_2()` will be `31`
+#### Calling functions
+```
+func();
+```
+```
+test = 4 + test_add_2();
+```
+Functions can be call either in an expression or in a separate statement. However, only
+functions that return a value can be called within an expression
 ### Variable assignment
 ```
 test = 2 + test;

@@ -474,6 +474,14 @@ public class Compiler
             );
         }
 
+        if (functionType.FunctionInfo.ReturnType is null)
+        {
+            throw new NoReturnValueException(
+                node.Location,
+                function.Type.Name
+            );
+        }
+
         // The register the function result is returned in
         RegisterValue expectedReturnRegister = new(
             functionType.FunctionInfo.ReturnType,

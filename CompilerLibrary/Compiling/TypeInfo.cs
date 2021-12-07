@@ -57,4 +57,4 @@ public record TypeInfo(
 }
 
 public record FunctionPointerTypeInfo(FunctionInfo FunctionInfo)
-    : TypeInfo(Size: 4, Name: $"{FunctionInfo.ReturnType.Name}()", IsSigned: false);
+    : TypeInfo(Size: 4, Name: $"{FunctionInfo.ReturnType?.Name}@()", IsSigned: false);

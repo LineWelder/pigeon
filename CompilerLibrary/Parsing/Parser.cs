@@ -234,7 +234,22 @@ public class Parser
         else
         {
             SyntaxNode left = ParseExpression();
-            Consume(TokenType.Equals, "=");
+
+            if (left is FunctionCallNode)
+            {
+                if (tokenizer.CurrentToken.Type is TokenType.Semicolon)
+                {
+                    tokenizer.NextToken();
+                    return left;
+                }
+
+                Consume(TokenType.Equals, "= or ;");
+            }
+            else
+            {
+                Consume(TokenType.Equals, "=");
+            }
+
             result = new AssignmentNode(
                 left.Location, left,
                 Right: ParseExpression()

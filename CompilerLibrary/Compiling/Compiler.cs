@@ -716,6 +716,11 @@ public class Compiler
                 }
                 break;
 
+            case FunctionCallNode functionCall:
+                Value function = CompileValue(functionCall.Function);
+                GenerateFunctionCall(functionCall, function, false);
+                break;
+
             default:
                 throw new UnexpectedSyntaxNodeException(node, "statement");
         }

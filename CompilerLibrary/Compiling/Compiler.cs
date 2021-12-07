@@ -462,8 +462,9 @@ public class Compiler
     /// </summary>
     /// <param name="node">The node the call happens within</param>
     /// <param name="function">The function to call</param>
+    /// <param name="mustReturnValue">Whether the function must return a value</param>
     /// <returns>The location of the returned value</returns>
-    private Value GenerateFunctionCall(SyntaxNode node, Value function)
+    private Value? GenerateFunctionCall(SyntaxNode node, Value function, bool mustReturnValue)
     {
         if (function.Type is not FunctionPointerTypeInfo functionType)
         {
@@ -474,51 +475,62 @@ public class Compiler
             );
         }
 
-        if (functionType.FunctionInfo.ReturnType is null)
+        RegisterValue expectedReturnRegister = null;
+        RegisterValue actualReturnRegister = null;
+
+        if (mustReturnValue)
         {
-            throw new NoReturnValueException(
-                node.Location,
-                function.Type.Name
+            if (functionType.FunctionInfo.ReturnType is null)
+            {
+                throw new NoReturnValueException(
+                    node.Location,
+                    function.Type.Name
+                );
+            }
+
+            // The register the function result is returned in
+            expectedReturnRegister = new(
+                functionType.FunctionInfo.ReturnType,
+                RegisterManager.GetRegisterNameFromId(
+                    0, functionType.FunctionInfo.ReturnType
+                )
             );
-        }
 
-        // The register the function result is returned in
-        RegisterValue expectedReturnRegister = new(
-            functionType.FunctionInfo.ReturnType,
-            RegisterManager.GetRegisterNameFromId(
-                0, functionType.FunctionInfo.ReturnType
-            )
-        );
-
-        // Allocating a register for the result
-        // If the allocated register is eax, ax, etc., it means that
-        // it was free, and can be used
-        // Otherwise the returned value will be moved into
-        // the allocated register
-        RegisterValue actualReturnRegister = registerManager.AllocateRegister(
-            node, functionType.FunctionInfo.ReturnType
-        );
-
-        // If eax, ax, etc. was not free, its value is saved
-        if (expectedReturnRegister != actualReturnRegister)
-        {
-            assemblyGenerator.EmitInstruction(
-                "mov", actualReturnRegister, expectedReturnRegister
+            // Allocating a register for the result
+            // If the allocated register is eax, ax, etc., it means that
+            // it was free, and can be used
+            // Otherwise the returned value will be moved into
+            // the allocated register
+            actualReturnRegister = registerManager.AllocateRegister(
+                node, functionType.FunctionInfo.ReturnType
             );
+
+            // If eax, ax, etc. was not free, its value is saved
+            if (expectedReturnRegister != actualReturnRegister)
+            {
+                assemblyGenerator.EmitInstruction(
+                    "mov", actualReturnRegister, expectedReturnRegister
+                );
+            }
         }
 
         assemblyGenerator.EmitInstruction("call", function);
 
-        // Swaping the register values to mov the function result into
-        // the resultRegister, and return the previous value of eax, ax, etc. 
-        if (expectedReturnRegister != actualReturnRegister)
+        if (mustReturnValue)
         {
-            assemblyGenerator.EmitInstruction(
-                "xchg", actualReturnRegister, expectedReturnRegister
-            );
+            // Swaping the register values to mov the function result into
+            // the resultRegister, and return the previous value of eax, ax, etc. 
+            if (expectedReturnRegister != actualReturnRegister)
+            {
+                assemblyGenerator.EmitInstruction(
+                    "xchg", actualReturnRegister, expectedReturnRegister
+                );
+            }
+
+            return actualReturnRegister;
         }
 
-        return actualReturnRegister;
+        return null;
     }
 
     /// <summary>
@@ -579,7 +591,7 @@ public class Compiler
 
             case FunctionCallNode functionCall:
                 Value function = CompileValue(functionCall.Function);
-                return GenerateFunctionCall(functionCall, function);
+                return GenerateFunctionCall(functionCall, function, true);
 
             case BinaryNode binary:
                 TypeInfo resultType = EvaluateType(binary) ?? targetType;

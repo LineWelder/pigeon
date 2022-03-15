@@ -1,6 +1,6 @@
-﻿using CompilerLibrary.Parsing;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
+using System;
 
 namespace CompilerLibrary.Compiling;
 
@@ -36,7 +36,33 @@ internal class AssemblyGenerator
     /// <param name="arguments">The list of instuction arguments</param>
     private static string BuildInstruction(string opcode, params object[] arguments)
     {
-        return $"\t{opcode}\t{string.Join(", ", arguments)}";
+        if (arguments.Length > 2)
+        {
+            throw new ArgumentException("Unexpected number of instruction arguments");
+        }
+
+        StringBuilder instruction = new($"\t{opcode}");
+        if (arguments.Length == 0)
+        {
+            return instruction.ToString();
+        }
+
+        instruction.Append('\t');
+        if (arguments.Length == 1)
+        {
+            instruction.Append(arguments[0]);
+            return instruction.ToString();
+        }
+
+        instruction.Append((arguments[0], arguments[1]) switch
+        {
+            (SymbolValue symbolArgument0, RegisterValue)
+                => $"[{symbolArgument0.Symbol}], {arguments[1]}",
+            (RegisterValue, SymbolValue symbolArgument1)
+                => $"{arguments[0]}, [{symbolArgument1.Symbol}]",
+            _   => $"{arguments[0]}, {arguments[1]}"
+        });
+        return instruction.ToString();
     }
 
     /// <summary>

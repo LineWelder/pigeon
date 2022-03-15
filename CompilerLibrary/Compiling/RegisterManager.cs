@@ -61,6 +61,15 @@ internal class RegisterManager
         return id;
     }
 
+#warning TODO Actually implement the method
+    /// <summary>
+    /// Returns the register which hold the value's name
+    /// </summary>
+    public string GetAllocatedRegisterName(RegisterValue value)
+    {
+        return GetRegisterNameFromId(value.AllocationId, value.Type);
+    }
+
     /// <summary>
     /// Returns a not-used register and marks it as used
     /// </summary>
@@ -81,7 +90,7 @@ internal class RegisterManager
 
         used[id] = true;
         allocated[id] = true;
-        return new RegisterValue(type, GetRegisterNameFromId(id, type));
+        return new RegisterValue(type, this, id);
     }
 
     /// <summary>

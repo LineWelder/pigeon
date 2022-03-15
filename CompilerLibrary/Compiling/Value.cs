@@ -10,9 +10,13 @@ internal record SymbolValue(TypeInfo Type, string Symbol)
                ? Symbol : $"{Type.AssemblyName} [{Symbol}]";
 }
 
-internal record RegisterValue(TypeInfo Type, string Name)
+#warning TODO Make AllocationId actually the allocation id
+/// <param name="RegisterManager">The register manager managing the value</param>
+/// <param name="AllocationId">The id of the allocation, not the register id</param>
+internal record RegisterValue(TypeInfo Type, RegisterManager RegisterManager, int AllocationId)
     : Value(Type)
 {
+    public string Name => RegisterManager.GetAllocatedRegisterName(this);
     public override string ToString() => Name;
 }
 

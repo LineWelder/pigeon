@@ -248,12 +248,7 @@ public class Compiler
             switch (source)
             {
                 case RegisterValue register:
-                    int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
-                    string convertedRegister = RegisterManager.GetRegisterNameFromId(
-                        registerId, destination.Type
-                    );
-
-                    converted = new RegisterValue(destination.Type, convertedRegister);
+                    converted = register with { Type = destination.Type };
                     break;
 
                 case SymbolValue symbol:
@@ -313,7 +308,7 @@ public class Compiler
                 }
             }
 
-            return new RegisterValue(type, convertedRegister);
+            return register with { Type = type };
         }
 
         if (value.Type == type)
@@ -492,12 +487,11 @@ public class Compiler
                 );
             }
 
+#warning TODO Make proper allocation
             // The register the function result is returned in
             expectedReturnRegister = new(
                 functionType.FunctionInfo.ReturnType,
-                RegisterManager.GetRegisterNameFromId(
-                    0, functionType.FunctionInfo.ReturnType
-                )
+                registerManager, 0
             );
 
             // Allocating a register for the result
@@ -706,9 +700,10 @@ public class Compiler
 
                 if (@return.InnerExpression is not null)
                 {
+#warning TODO Make proper allocation
                     RegisterValue returnRegister = new(
                         currentFunction.ReturnType,
-                        RegisterManager.GetRegisterNameFromId(0, currentFunction.ReturnType)
+                        registerManager, 0
                     );
                     GenerateAssignment(@return, returnRegister, @return.InnerExpression);
                 }

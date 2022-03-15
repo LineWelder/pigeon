@@ -101,7 +101,7 @@ include 'include\win32a.inc'"
         EmitInstruction("push", "eax");
         EmitInstruction("push", "printf_format");
         EmitInstruction("call", "[printf]");
-        EmitInstruction("add", "esp, 8");
+        EmitInstruction("add", "esp", "8");
 
         EmitInstruction("ret");
 

@@ -7,17 +7,9 @@ using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 const string code = @"
-i32 dword = 30;
-i16 word  = 29;
-u8  byte  = 8;
-
-test()
-{
-}
-
 i32 main()
 {
-    test();
+    return input + 1;
 }
 ";
 

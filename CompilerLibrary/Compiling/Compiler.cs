@@ -20,7 +20,11 @@ public class Compiler
         { "u8",  new TypeInfo(Size: 1, Name: "u8",  IsSigned: false) }
     };
 
-    private readonly Dictionary<string, VariableInfo> variables = new();
+    private readonly Dictionary<string, VariableInfo> variables = new()
+    {
+        { "_input", new(SourceLocation: new("", 0, 0), AssemblySymbol: "_input",
+            Type: COMPILED_TYPES["i32"], AssemblyValue: "0") }
+    };
     private readonly Dictionary<string, FunctionInfo> functions = new();
 
     private FunctionInfo currentFunction;

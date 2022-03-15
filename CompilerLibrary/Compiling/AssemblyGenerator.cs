@@ -30,12 +30,22 @@ internal class AssemblyGenerator
         => textSection.AppendLine($"{symbol}:");
 
     /// <summary>
+    /// Returns the string containing the assembly instruction
+    /// </summary>
+    /// <param name="opcode">The instruction opcode</param>
+    /// <param name="arguments">The list of instuction arguments</param>
+    private static string BuildInstruction(string opcode, params object[] arguments)
+    {
+        return $"\t{opcode}\t{string.Join(", ", arguments)}";
+    }
+
+    /// <summary>
     /// Appends an instruction to the .text section
     /// </summary>
     /// <param name="opcode">The instruction opcode</param>
     /// <param name="arguments">The list of instuction arguments</param>
     public void EmitInstructionToText(string opcode, params object[] arguments)
-        => textSection.AppendLine($"\t{opcode}\t{string.Join(", ", arguments)}");
+        => textSection.AppendLine(BuildInstruction(opcode, arguments));
 
     /// <summary>
     /// Appends an instruction to the current function
@@ -43,7 +53,7 @@ internal class AssemblyGenerator
     /// <param name="opcode">The instruction opcode</param>
     /// <param name="arguments">The list of instuction arguments</param>
     public void EmitInstruction(string opcode, params object[] arguments)
-        => currentFunction.AppendLine($"\t{opcode}\t{string.Join(", ", arguments)}");
+        => currentFunction.AppendLine(BuildInstruction(opcode, arguments));
 
     /// <summary>
     /// Creates a new label pointing to the next instruction

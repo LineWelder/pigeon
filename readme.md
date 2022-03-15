@@ -8,19 +8,18 @@
 - Pointers
 - Arrays
 - Strings
-- Dll imports
-- Implement multiplication and division
+- Multiplication and division
 - Function pointers
 ## Implemented features
-### Basic types
+### Basic number types
 - Signed: `i8`, `i16`, `i32`
 - Unsigned: `u8`, `u16`, `u32`<br/>
-Where the number is type's size in bits
+Where the number is type's size in bits.
 ### Global variables
 ```
 i16 test = 29;
 ```
-Declares a global variable named `test` of type `i16` and initializes it with `29`
+Declares a global variable named `test` of type `i16` and initializes it with `29`.
 ### Functions
 ```
 func()
@@ -28,11 +27,11 @@ func()
     ...
 }
 ```
-Declares a function named `func` that doesn't return any value. Analog of void functions in C.
+Declares a function named `func` that doesn't return any value. Analog of void functions from C.
 Inside the curly braces expected statements - the code that should be executed whenever the
 function is called.
 Inside such a function `return;` statement can be used to immediately end the function
-execution
+execution.
 #### Returning values from functions
 ```
 i16 test_add_2()
@@ -41,7 +40,7 @@ i16 test_add_2()
 }
 ```
 The return statement ends current function execution. The returned value becomes the value
-of the function call, so `test_add_2()` will be `31`
+of the function call, so `test_add_2()` will be equal to `31`.
 #### Calling functions
 ```
 func();
@@ -50,19 +49,19 @@ func();
 test = 4 + test_add_2();
 ```
 Functions can be call either in an expression or in a separate statement. However, only
-functions that return a value can be called within an expression
+functions that return a value can be called within an expression.
 ### Variable assignment
 ```
 test = 2 + test;
 ```
 Computes the expression on the right side and assigns the variable on the left side
-to it's result
+to it's result.
 ### Basic arithmetics
 ```
 -test + 4 * 3 - 29
 ```
-- Available are four basic arithmetic operators: + - * /<br/>
-  And unary - to negate values. `test * -2` and `test + -2` are valid expressions<br/>
+- Available are the four basic arithmetic operators: `+` `-` `*` `/`<br/>
+  And the unary `-` to negate values. `test * -2` and `test + -2` are valid expressions<br/>
   **Multiplication and divizion are not implemented yet!
   However if the result can be computed at compile time it will be**
 - The compiler is able to optimize arithmetic expressions, so the compiled expression will be
@@ -70,7 +69,7 @@ to it's result
 - The result type of an expression is the widest type of a variable used in it, or
   the type of the variable the expression result is assigned to
 ### Explicit type casts
-- `test:i8` - the first 8 bits of test
-- `test:i32` - test extended to 32 bits by filling the highest bits with
+- `test:i8` - the first 8 bits of `test`
+- `test:i32` - `test` extended to 32 bits by filling the highest bits with
   - the sign bit if converting into a signed type
   - zeros if converting into an unsigned type

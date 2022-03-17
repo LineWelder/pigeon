@@ -65,9 +65,9 @@ internal class RegisterManager
     /// <summary>
     /// Returns the register which hold the value's name
     /// </summary>
-    public string GetAllocatedRegisterName(RegisterValue value)
+    public int GetRegisterIdFromAllocation(RegisterValue value)
     {
-        return GetRegisterNameFromId(value.AllocationId, value.Type);
+        return value.AllocationId;
     }
 
     /// <summary>

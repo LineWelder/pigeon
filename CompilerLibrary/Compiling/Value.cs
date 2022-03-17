@@ -16,7 +16,11 @@ internal record SymbolValue(TypeInfo Type, string Symbol)
 internal record RegisterValue(TypeInfo Type, RegisterManager RegisterManager, int AllocationId)
     : Value(Type)
 {
-    public string Name => RegisterManager.GetAllocatedRegisterName(this);
+    public string Name => RegisterManager.GetRegisterNameFromId(
+        RegisterManager.GetRegisterIdFromAllocation(this),
+        Type
+    );
+
     public override string ToString() => Name;
 }
 

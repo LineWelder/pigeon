@@ -486,14 +486,16 @@ public class Compiler
             }
 
             // The register the function result is returned in
-            (returnRegister, string oldValueNewRegister) = registerManager.RequireRegister(
+            (returnRegister, int oldValueNewRegister) = registerManager.RequireRegister(
                 node, functionType.FunctionInfo.ReturnType, 0
             );
 
-            if (oldValueNewRegister is not null)
+            if (oldValueNewRegister >= 0)
             {
                 assemblyGenerator.EmitInstruction(
-                    "mov", oldValueNewRegister, "eax"
+                    "mov",
+                    RegisterManager.GetRegisterNameFromId(oldValueNewRegister, COMPILED_TYPES["i32"]),
+                    RegisterManager.GetRegisterNameFromId(0, COMPILED_TYPES["i32"])
                 );
             }
         }

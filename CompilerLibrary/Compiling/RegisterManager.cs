@@ -93,28 +93,25 @@ internal class RegisterManager
 
     /// <summary>
     /// Allocates the required register, if it was not free, moves the previous allocation
-    /// to another register and returns it id for mov generation
+    /// to another register and returns its id for mov generation
     /// </summary>
     /// <param name="node">The node which needs the allocated register, used for throwing OutOfRegistersException</param>
     /// <param name="id">The id of the required register</param>
-    public (RegisterValue register, string? oldValueNewRegister) RequireRegister(
+    public (RegisterValue register, int oldValueNewRegister) RequireRegister(
         SyntaxNode node, TypeInfo type, int id)
     {
-        string? oldValueNewRegister = null;
+        int oldValueNewRegister = -1;
 
         if (allocations[id] >= 0)
         {
-            int oldValueNewRegisterId = Array.FindIndex(allocations, x => x < 0);
-            if (oldValueNewRegisterId <= 0)
+            oldValueNewRegister = Array.FindIndex(allocations, x => x < 0);
+            if (oldValueNewRegister <= 0)
             {
                 throw new OutOfRegistersException(node.Location);
             }
 
             used[id] = true;
-            allocations[oldValueNewRegisterId] = allocations[id];
-            oldValueNewRegister = GetRegisterNameFromId(
-                oldValueNewRegisterId, Compiler.COMPILED_TYPES["i32"]
-            );
+            allocations[oldValueNewRegister] = allocations[id];
         }
 
         used[id] = true;

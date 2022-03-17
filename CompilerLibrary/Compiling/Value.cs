@@ -10,7 +10,6 @@ internal record SymbolValue(TypeInfo Type, string Symbol)
                ? Symbol : $"{Type.AssemblyName} [{Symbol}]";
 }
 
-#warning TODO Make AllocationId actually the allocation id
 /// <param name="RegisterManager">The register manager managing the value</param>
 /// <param name="AllocationId">The id of the allocation, not the register id</param>
 internal record RegisterValue(TypeInfo Type, RegisterManager RegisterManager, int AllocationId)

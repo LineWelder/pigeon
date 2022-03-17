@@ -474,9 +474,7 @@ public class Compiler
             );
         }
 
-        RegisterValue expectedReturnRegister = null;
-        RegisterValue actualReturnRegister = null;
-
+        RegisterValue? returnRegister = null;
         if (mustReturnValue)
         {
             if (functionType.FunctionInfo.ReturnType is null)
@@ -487,48 +485,21 @@ public class Compiler
                 );
             }
 
-#warning TODO Make proper allocation
             // The register the function result is returned in
-            expectedReturnRegister = new(
-                functionType.FunctionInfo.ReturnType,
-                registerManager, 0
+            (returnRegister, string oldValueNewRegister) = registerManager.RequireRegister(
+                node, functionType.FunctionInfo.ReturnType, 0
             );
 
-            // Allocating a register for the result
-            // If the allocated register is eax, ax, etc., it means that
-            // it was free, and can be used
-            // Otherwise the returned value will be moved into
-            // the allocated register
-            actualReturnRegister = registerManager.AllocateRegister(
-                node, functionType.FunctionInfo.ReturnType
-            );
-
-            // If eax, ax, etc. was not free, its value is saved
-            if (expectedReturnRegister != actualReturnRegister)
+            if (oldValueNewRegister is not null)
             {
                 assemblyGenerator.EmitInstruction(
-                    "mov", actualReturnRegister, expectedReturnRegister
+                    "mov", oldValueNewRegister, "eax"
                 );
             }
         }
 
         assemblyGenerator.EmitInstruction("call", function);
-
-        if (mustReturnValue)
-        {
-            // Swaping the register values to mov the function result into
-            // the resultRegister, and return the previous value of eax, ax, etc. 
-            if (expectedReturnRegister != actualReturnRegister)
-            {
-                assemblyGenerator.EmitInstruction(
-                    "xchg", actualReturnRegister, expectedReturnRegister
-                );
-            }
-
-            return actualReturnRegister;
-        }
-
-        return null;
+        return returnRegister;
     }
 
     /// <summary>
@@ -700,12 +671,11 @@ public class Compiler
 
                 if (@return.InnerExpression is not null)
                 {
-#warning TODO Make proper allocation
-                    RegisterValue returnRegister = new(
-                        currentFunction.ReturnType,
-                        registerManager, 0
-                    );
+                    RegisterValue returnRegister
+                        = registerManager.GetReturnRegister(currentFunction.ReturnType);
+
                     GenerateAssignment(@return, returnRegister, @return.InnerExpression);
+                    registerManager.FreeRegister(returnRegister);
                 }
 
                 if (@return != currentFunction.Body[^1])

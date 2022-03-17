@@ -18,9 +18,15 @@ internal class RegisterManager
     private readonly bool[] used = new bool[4];
 
     /// <summary>
-    /// Which registers are currently allocated
+    /// The element of index x is the allocation id of the value stored
+    /// in the register of id x, or -1 if the register is free
     /// </summary>
-    private readonly bool[] allocated = new bool[4];
+    private readonly int[] allocations = new int[4];
+
+    public RegisterManager()
+    {
+        Array.Fill(allocations, -1);
+    }
 
     /// <summary>
     /// Returns the enumerable of the registers used in the current function
@@ -61,13 +67,22 @@ internal class RegisterManager
         return id;
     }
 
-#warning TODO Actually implement the method
     /// <summary>
     /// Returns the register which hold the value's name
     /// </summary>
     public int GetRegisterIdFromAllocation(RegisterValue value)
     {
-        return value.AllocationId;
+        // It is the return register
+        if (value.AllocationId == -2)
+        {
+            return 0;
+        }
+
+        int registerId = Array.IndexOf(allocations, value.AllocationId);
+        if (registerId < 0)
+            throw new ArgumentException($"The allocation of id {value.AllocationId} does not exist");
+
+        return registerId;
     }
 
     /// <summary>
@@ -77,20 +92,64 @@ internal class RegisterManager
     /// <returns>A free register</returns>
     public RegisterValue AllocateRegister(SyntaxNode node, TypeInfo type)
     {
-        int id = 0;
-        while (allocated[id])
+        int id = Array.FindIndex(allocations, x => x < 0);
+        if (id <= 0)
         {
-            id++;
-
-            if (id > 4)
-            {
-                throw new OutOfRegistersException(node.Location);
-            }
+            throw new OutOfRegistersException(node.Location);
         }
 
         used[id] = true;
-        allocated[id] = true;
-        return new RegisterValue(type, this, id);
+        allocations[id] = allocations.Max() + 1;
+        return new RegisterValue(type, this, allocations[id]);
+    }
+
+    /// <summary>
+    /// Allocates the required register, if it was not free, moves the previous allocation
+    /// to another register and returns it id for mov generation
+    /// </summary>
+    /// <param name="node">The node which needs the allocated register, used for throwing OutOfRegistersException</param>
+    /// <param name="id">The id of the required register</param>
+    public (RegisterValue register, string? oldValueNewRegister) RequireRegister(
+        SyntaxNode node, TypeInfo type, int id)
+    {
+        string? oldValueNewRegister = null;
+
+        if (allocations[id] >= 0)
+        {
+            int oldValueNewRegisterId = Array.FindIndex(allocations, x => x < 0);
+            if (oldValueNewRegisterId <= 0)
+            {
+                throw new OutOfRegistersException(node.Location);
+            }
+
+            used[id] = true;
+            allocations[oldValueNewRegisterId] = allocations[id];
+            oldValueNewRegister = GetRegisterNameFromId(
+                oldValueNewRegisterId, Compiler.COMPILED_TYPES["i32"]
+            );
+        }
+
+        used[id] = true;
+        allocations[id] = allocations.Max() + 1;
+        return (
+            new RegisterValue(type, this, allocations[id]),
+            oldValueNewRegister
+        );
+    }
+
+    /// <summary>
+    /// Returns the register used for returning values from functions,
+    /// but does not allocate it. Is needed to specify the destination when compiling
+    /// return statement
+    /// </summary>
+    public RegisterValue GetReturnRegister(TypeInfo type)
+    {
+        if (allocations[0] >= 0)
+        {
+            throw new Exception("eax is not freed");
+        }
+
+        return new RegisterValue(type, this, -2);
     }
 
     /// <summary>
@@ -111,7 +170,11 @@ internal class RegisterManager
         if (value is not RegisterValue register)
             return;
 
-        int id = GetRegisterIdFromAllocation(register);
-        allocated[id] = false;
+        try
+        {
+            int id = GetRegisterIdFromAllocation(register);
+            allocations[id] = -1;
+        }
+        catch (ArgumentException) { }
     }
 }

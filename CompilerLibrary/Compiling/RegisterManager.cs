@@ -111,7 +111,7 @@ internal class RegisterManager
         if (value is not RegisterValue register)
             return;
 
-        int id = GetRegisterIdFromName(register.Name);
+        int id = GetRegisterIdFromAllocation(register);
         allocated[id] = false;
     }
 }

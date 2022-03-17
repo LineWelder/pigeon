@@ -7,14 +7,17 @@ using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 const string code = @"
-i32 test()
+i32 test = 0;
+
+i32 test_plus_2()
 {
-    return 2;
+    return test + 2;
 }
 
 i32 main()
 {
-    return test() + test();
+    test = input;
+    return test_plus_2();
 }
 ";
 

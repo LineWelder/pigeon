@@ -86,7 +86,7 @@ internal class RegisterManager
     public RegisterValue AllocateRegister(SyntaxNode node, TypeInfo type)
     {
         int id = Array.FindIndex(allocations, x => x < 0);
-        if (id <= 0)
+        if (id < 0)
         {
             throw new OutOfRegistersException(node.Location);
         }

@@ -487,15 +487,18 @@ public class Compiler
 
             // The register the function result is returned in
             (returnRegister, int oldValueNewRegister) = registerManager.RequireRegister(
-                node, functionType.FunctionInfo.ReturnType, 0
+                node, functionType.FunctionInfo.ReturnType,
+                RegisterManager.RETURN_REGISTER_ID
             );
 
             if (oldValueNewRegister >= 0)
             {
                 assemblyGenerator.EmitInstruction(
                     "mov",
-                    RegisterManager.GetRegisterNameFromId(oldValueNewRegister, COMPILED_TYPES["i32"]),
-                    RegisterManager.GetRegisterNameFromId(0, COMPILED_TYPES["i32"])
+                    RegisterManager.GetRegisterNameFromId(
+                        oldValueNewRegister, COMPILED_TYPES["i32"]),
+                    RegisterManager.GetRegisterNameFromId(
+                        RegisterManager.RETURN_REGISTER_ID, COMPILED_TYPES["i32"])
                 );
             }
         }

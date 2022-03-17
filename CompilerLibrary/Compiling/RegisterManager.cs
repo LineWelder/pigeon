@@ -13,6 +13,11 @@ namespace CompilerLibrary.Compiling;
 internal class RegisterManager
 {
     /// <summary>
+    /// The id of the register used to return values from functions
+    /// </summary>
+    public const int RETURN_REGISTER_ID = 0;
+
+    /// <summary>
     /// Which registers were used in the current function
     /// </summary>
     private readonly bool[] used = new bool[4];
@@ -63,7 +68,7 @@ internal class RegisterManager
         // It is the return register
         if (value.AllocationId == -2)
         {
-            return 0;
+            return RETURN_REGISTER_ID;
         }
 
         int registerId = Array.IndexOf(allocations, value.AllocationId);

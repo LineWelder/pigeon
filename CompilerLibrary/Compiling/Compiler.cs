@@ -289,7 +289,7 @@ public class Compiler
     {
         RegisterValue CutRegister(RegisterValue register, TypeInfo type)
         {
-            int registerId = RegisterManager.GetRegisterIdFromName(register.Name);
+            int registerId = registerManager.GetRegisterIdFromAllocation(register);
             string convertedRegister = RegisterManager.GetRegisterNameFromId(registerId, type);
 
             if (type.Size > register.Type.Size)

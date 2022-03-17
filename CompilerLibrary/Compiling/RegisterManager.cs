@@ -56,18 +56,6 @@ internal class RegisterManager
     }
 
     /// <summary>
-    /// Returns the name of the register corresponding to the given id
-    /// </summary>
-    public static int GetRegisterIdFromName(string name)
-    {
-        int id = name[ name[0] is 'e' ? 1 : 0 ] - 'a';
-        if (id is < 0 or > 3)
-            throw new ArgumentException($"{name} is not a register", nameof(name));
-
-        return id;
-    }
-
-    /// <summary>
     /// Returns the register which hold the value's name
     /// </summary>
     public int GetRegisterIdFromAllocation(RegisterValue value)

@@ -75,7 +75,9 @@ internal class RegisterManager
 
         int registerId = Array.IndexOf(allocations, value.AllocationId);
         if (registerId < 0)
+        {
             throw new ArgumentException($"The allocation of id {value.AllocationId} does not exist");
+        }
 
         return registerId;
     }

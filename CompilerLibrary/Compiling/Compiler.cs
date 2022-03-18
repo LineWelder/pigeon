@@ -33,7 +33,12 @@ public class Compiler
     private AssemblyGenerator assemblyGenerator;
     private RegisterManager registerManager;
 
-    public Compiler() { }
+    public Compiler()
+    {
+        currentFunction = null!;
+        assemblyGenerator = null!;
+        registerManager = null!;
+    }
 
     /// <summary>
     /// Returns the TypeInfo for the given type
@@ -45,7 +50,7 @@ public class Compiler
             throw new UnexpectedSyntaxNodeException(type, "type identifier");
         }
 
-        if (COMPILED_TYPES.TryGetValue(identifier.Value, out TypeInfo compiledType))
+        if (COMPILED_TYPES.TryGetValue(identifier.Value, out TypeInfo? compiledType))
         {
             return compiledType;
         }
@@ -196,27 +201,30 @@ public class Compiler
     /// <param name="source">The location to take data from</param>
     /// <param name="explicitTypeCast">If true, allows unsafe type casts</param>
     private void GenerateMov(
-        SyntaxNode node, Value destination,
+        SyntaxNode node, StronglyTypedValue destination,
         Value source, bool explicitTypeCast = false)
     {
-        if (!explicitTypeCast && destination.Type.IsSigned != source.Type.IsSigned)
+        if (source.Type is not null)
         {
-            throw new InvalidTypeCastException(
-                node.Location,
-                source.Type, destination.Type,
-                "the types must be either both signed or unsigned"
-            );
+            if (!explicitTypeCast && destination.StrongType.IsSigned != source.Type.IsSigned)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location,
+                    source.Type, destination.StrongType,
+                    "the types must be either both signed or unsigned"
+                );
+            }
+
+            if (!explicitTypeCast && destination.StrongType.Size < source.Type.Size)
+            {
+                throw new InvalidTypeCastException(
+                    node.Location, source.Type, destination.StrongType,
+                    "possible value loss"
+                );
+            }
         }
 
-        if (!explicitTypeCast && destination.Type.Size < source.Type.Size)
-        {
-            throw new InvalidTypeCastException(
-                node.Location, source.Type, destination.Type,
-                "possible value loss"
-            );
-        }
-
-        if (destination == source)
+        if ((Value)destination == source)
         {
             return;
         }
@@ -224,7 +232,7 @@ public class Compiler
         // We cannot transfer data from a variable to another directly
         if (source is SymbolValue && destination is not RegisterValue)
         {
-            RegisterValue transferRegister = registerManager.AllocateRegister(node, source.Type);
+            RegisterValue transferRegister = registerManager.AllocateRegister(node, source.Type!);
             assemblyGenerator.EmitInstruction("mov", transferRegister, source);
             source = transferRegister;
         }
@@ -234,18 +242,18 @@ public class Compiler
             assemblyGenerator.EmitInstruction(
                 "mov", destination,
                 ConvertIntegerValue(
-                    node, integerValue, destination.Type, explicitTypeCast
+                    node, integerValue, destination.StrongType, explicitTypeCast
                 )
             );
         }
-        else if (destination.Type.Size == source.Type.Size)
+        else if (destination.StrongType.Size == source.Type!.Size)
         {
             assemblyGenerator.EmitInstruction("mov", destination, source);
         }
-        else if (destination.Type.Size > source.Type.Size)
+        else if (destination.StrongType.Size > source.Type.Size)
         {
             assemblyGenerator.EmitInstruction(
-                destination.Type.IsSigned ? "movsx" : "movzx",
+                destination.StrongType.IsSigned ? "movsx" : "movzx",
                 destination, source
             );
         }
@@ -255,22 +263,22 @@ public class Compiler
             switch (source)
             {
                 case RegisterValue register:
-                    converted = register with { Type = destination.Type };
+                    converted = register with { Type = destination.StrongType };
                     break;
 
                 case SymbolValue symbol:
-                    converted = symbol with { Type = destination.Type };
+                    converted = symbol with { Type = destination.StrongType };
                     break;
 
                 case IntegerValue integer:
-                    converted = ConvertIntegerValue(node, integer, destination.Type, true);
+                    converted = ConvertIntegerValue(node, integer, destination.StrongType, true);
                     break;
 
                 default:
                     throw new ArgumentException("Unexpected value class", nameof(source));
             }
 
-            if (destination == converted)
+            if ((Value)destination == converted)
             {
                 return;
             }
@@ -299,7 +307,7 @@ public class Compiler
             int registerId = registerManager.GetRegisterIdFromAllocation(register);
             string convertedRegister = RegisterManager.GetRegisterNameFromId(registerId, type);
 
-            if (type.Size > register.Type.Size)
+            if (type.Size > register.Type!.Size)
             {
                 if (type.IsSigned)
                 {
@@ -328,7 +336,7 @@ public class Compiler
             return ConvertIntegerValue(node, integerValue, type, explicitly);
         }
 
-        if (value.Type.IsSigned != type.IsSigned && !explicitly)
+        if (!explicitly && value.Type!.IsSigned != type.IsSigned)
         {
             throw new InvalidTypeCastException(
                 node.Location,
@@ -337,7 +345,7 @@ public class Compiler
             );
         }
 
-        if (value.Type.Size > type.Size)
+        if (value.Type!.Size > type.Size)
         {
             if (!explicitly)
             {
@@ -380,11 +388,11 @@ public class Compiler
     private SymbolValue FindSymbol(IdentifierNode identifier)
     {
         string symbol = AssemblyGenerator.GetAssemblySymbol(identifier.Value);
-        if (variables.TryGetValue(symbol, out VariableInfo variable))
+        if (variables.TryGetValue(symbol, out VariableInfo? variable))
         {
             return new SymbolValue(variable.Type, variable.AssemblySymbol);
         }
-        else if (functions.TryGetValue(symbol, out FunctionInfo function))
+        else if (functions.TryGetValue(symbol, out FunctionInfo? function))
         {
             return new SymbolValue(
                 new FunctionPointerTypeInfo(function),
@@ -428,7 +436,7 @@ public class Compiler
                 return innerType;
 
             case FunctionCallNode functionCall:
-                TypeInfo function = EvaluateType(functionCall.Function);
+                TypeInfo? function = EvaluateType(functionCall.Function);
                 if (function is not FunctionPointerTypeInfo functionType)
                 {
                     throw new NotCallableTypeException(functionCall.Location, function);
@@ -510,7 +518,7 @@ public class Compiler
     /// </summary>
     /// <param name="node">The expression to compile</param>
     /// <returns>Value representing the result of the expression</returns>
-    private Value CompileValue(SyntaxNode node, TypeInfo targetType = null)
+    private Value CompileValue(SyntaxNode node, TypeInfo? targetType = null)
     {
         switch (node)
         {
@@ -542,7 +550,7 @@ public class Compiler
             case NegationNode negation:
                 Value inner = CompileValue(negation.InnerExpression, targetType);
 
-                if (!inner.Type.IsSigned)
+                if (inner.Type is not null && !inner.Type.IsSigned)
                 {
                     throw new UnsignedTypeException(
                         negation.Location, inner.Type,
@@ -552,7 +560,7 @@ public class Compiler
 
                 if (inner is not RegisterValue)
                 {
-                    RegisterValue resultRegister = registerManager.AllocateRegister(negation, inner.Type);
+                    RegisterValue resultRegister = registerManager.AllocateRegister(negation, inner.Type!);
                     GenerateMov(negation, resultRegister, inner);
                     inner = resultRegister;
                 }
@@ -562,15 +570,16 @@ public class Compiler
 
             case FunctionCallNode functionCall:
                 Value function = CompileValue(functionCall.Function);
-                return GenerateFunctionCall(functionCall, function, true);
+                return GenerateFunctionCall(functionCall, function, true)!;
 
             case BinaryNode binary:
-                TypeInfo resultType = EvaluateType(binary) ?? targetType;
+                TypeInfo? resultType = EvaluateType(binary) ?? targetType;
 
                 Value left = CompileValue(binary.Left, resultType);
                 Value right = CompileValue(binary.Right, resultType);
 
-                if (left.Type.IsSigned != right.Type.IsSigned)
+                if (left.Type is not null && right.Type is not null
+                 && left.Type.IsSigned != right.Type.IsSigned)
                 {
                     throw new InvalidTypeCastException(
                         binary.Location,
@@ -587,13 +596,16 @@ public class Compiler
                     }
                     else
                     {
-                        RegisterValue accumulator = registerManager.AllocateRegister(binary, resultType);
+                        RegisterValue accumulator = registerManager.AllocateRegister(binary, resultType!);
                         GenerateMov(binary, accumulator, left);
                         left = accumulator;
                     }
                 }
 
-                right = GenerateTypeCast(binary, right, resultType);
+                if (resultType is not null)
+                {
+                    right = GenerateTypeCast(binary, right, resultType);
+                }
 
                 assemblyGenerator.EmitInstruction(
                     binary.Operation switch
@@ -619,7 +631,7 @@ public class Compiler
     /// <param name="node">The node of the assignment</param>
     /// <param name="destination">The location to mov the value into</param>
     /// <param name="expression">The expression to get value from</param>
-    private void GenerateAssignment(SyntaxNode node, Value destination, SyntaxNode expression)
+    private void GenerateAssignment(SyntaxNode node, StronglyTypedValue destination, SyntaxNode expression)
     {
         expression = Optimizer.OptimizeExpression(expression);
         Value value;
@@ -627,7 +639,7 @@ public class Compiler
         if (expression is TypeCastNode typeCast)
         {
             TypeInfo typeInfo = GetTypeInfo(typeCast.Type);
-            if (typeInfo == destination.Type)
+            if (typeInfo == destination.StrongType)
             {
                 value = CompileValue(typeCast.Value);
                 GenerateMov(
@@ -640,7 +652,7 @@ public class Compiler
             }
         }
 
-        value = CompileValue(expression, destination.Type);
+        value = CompileValue(expression, destination.StrongType);
         GenerateMov(node, destination, value);
 
     endMov:
@@ -657,12 +669,12 @@ public class Compiler
         {
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
-                if (left is not SymbolValue)
+                if (left is not SymbolValue leftSymbol)
                 {
                     throw new NotLValueException(assignment.Left);
                 }
 
-                GenerateAssignment(assignment, left, assignment.Right);
+                GenerateAssignment(assignment, leftSymbol, assignment.Right);
                 break;
 
             case ReturnNode @return:
@@ -676,7 +688,7 @@ public class Compiler
                 if (@return.InnerExpression is not null)
                 {
                     RegisterValue returnRegister
-                        = registerManager.GetReturnRegister(currentFunction.ReturnType);
+                        = registerManager.GetReturnRegister(currentFunction.ReturnType!);
 
                     GenerateAssignment(@return, returnRegister, @return.InnerExpression);
                     registerManager.FreeRegister(returnRegister);

@@ -54,6 +54,7 @@ public class Tokenizer
         this.filePath = filePath;
         this.stream = stream;
         ReachedTheEOF = false;
+        CurrentToken = null!;
 
         NextCharacter();
         currentLine = 0;

@@ -433,12 +433,7 @@ public class Compiler
                 TypeInfo function = EvaluateType(functionCall.Function);
                 if (function is not FunctionPointerTypeInfo functionType)
                 {
-#warning Create UncallableTypeException
-                    throw new InvalidTypeCastException(
-                        functionCall.Location,
-                        function, function,
-                        "uncallable type"
-                    );
+                    throw new NotCallableTypeException(functionCall.Location, function);
                 }
 
                 return functionType.FunctionInfo.ReturnType;
@@ -476,12 +471,7 @@ public class Compiler
     {
         if (function.Type is not FunctionPointerTypeInfo functionType)
         {
-#warning Create UncallableTypeException
-            throw new InvalidTypeCastException(
-                node.Location,
-                function.Type, function.Type,
-                "uncallable type"
-            );
+            throw new NotCallableTypeException(node.Location, function.Type);
         }
 
         RegisterValue? returnRegister = null;

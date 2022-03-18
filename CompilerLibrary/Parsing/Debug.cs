@@ -14,6 +14,18 @@ public static class Debug
     };
 
     /// <summary>
+    /// Prints the given syntax node into console and
+    /// puts parentheses around it if required
+    /// </summary>
+    /// <param name="putParentheses">Specifies whether to put the parentheses or not</param>
+    private static void PrintInParenthesesIfNeeded(SyntaxNode node, bool putParentheses)
+    {
+        if (putParentheses) Console.Write('(');
+        PrintSyntaxNode(node);
+        if (putParentheses) Console.Write(')');
+    }
+
+    /// <summary>
     /// Prints the given syntax node into console
     /// with <paramref name="offset"/> spaces before each line
     /// </summary>
@@ -76,10 +88,7 @@ public static class Debug
                 break;
 
             case TypeCastNode typeCast:
-                if (typeCast.Value is BinaryNode) Console.Write('(');
-                PrintSyntaxNode(typeCast.Value);
-                if (typeCast.Value is BinaryNode) Console.Write(')');
-
+                PrintInParenthesesIfNeeded(typeCast.Value, typeCast.Value is BinaryNode);
                 Console.Write(':');
                 PrintSyntaxNode(typeCast.Type);
 
@@ -87,9 +96,10 @@ public static class Debug
 
             case NegationNode negation:
                 Console.Write('-');
-                if (negation.InnerExpression is not (IntegerNode or IdentifierNode)) Console.Write('(');
-                PrintSyntaxNode(negation.InnerExpression);
-                if (negation.InnerExpression is not (IntegerNode or IdentifierNode)) Console.Write(')');
+                PrintInParenthesesIfNeeded(
+                    negation.InnerExpression,
+                    negation.InnerExpression is not (IntegerNode or IdentifierNode)
+                );
 
                 break;
 
@@ -104,15 +114,9 @@ public static class Debug
                  && Parser.BINARY_OPERATION_PRIORITIES[rightOperation]
                         <= Parser.BINARY_OPERATION_PRIORITIES[binary.Operation];
 
-                if (leftParentheses) Console.Write('(');
-                PrintSyntaxNode(binary.Left);
-                if (leftParentheses) Console.Write(')');
-
+                PrintInParenthesesIfNeeded(binary.Left, leftParentheses);
                 Console.Write($" {BINARY_OPERATORS[binary.Operation]} ");
-
-                if (rightParentheses) Console.Write('(');
-                PrintSyntaxNode(binary.Right);
-                if (rightParentheses) Console.Write(')');
+                PrintInParenthesesIfNeeded(binary.Right, rightParentheses);
 
                 break;
 

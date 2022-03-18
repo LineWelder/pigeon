@@ -224,7 +224,7 @@ public class Compiler
             }
         }
 
-        if ((Value)destination == source)
+        if (Value.SameLocation(destination, source))
         {
             return;
         }
@@ -278,7 +278,7 @@ public class Compiler
                     throw new ArgumentException("Unexpected value class", nameof(source));
             }
 
-            if ((Value)destination == converted)
+            if (Value.SameLocation(destination, converted))
             {
                 return;
             }

@@ -419,11 +419,9 @@ public class Compiler
                 TypeInfo? innerType = EvaluateType(negation.InnerExpression);
                 if (!(innerType?.IsSigned ?? true))
                 {
-#warning Create UnsignedTypeException
-                    throw new InvalidTypeCastException(
-                        negation.Location,
-                        innerType, innerType,
-                        "cannot apply negation to an unsigned type"
+                    throw new UnsignedTypeException(
+                        negation.Location, innerType,
+                        "negation cannot be applied"
                     );
                 }
 
@@ -546,11 +544,9 @@ public class Compiler
 
                 if (!inner.Type.IsSigned)
                 {
-#warning Create UnsignedTypeException
-                    throw new InvalidTypeCastException(
-                        negation.Location,
-                        inner.Type, inner.Type,
-                        "cannot apply negation to an unsigned type"
+                    throw new UnsignedTypeException(
+                        negation.Location, inner.Type,
+                        "negation cannot be applied"
                     );
                 }
 

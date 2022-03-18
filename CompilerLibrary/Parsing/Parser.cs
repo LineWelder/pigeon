@@ -57,13 +57,12 @@ public class Parser
         Token token = tokenizer.CurrentToken;
         tokenizer.NextToken();
 
-        return token switch
+        if (token is not StringToken { Type: TokenType.Identifier } identifier)
         {
-            StringToken { Type: TokenType.Identifier } identifier =>
-                new IdentifierNode(identifier.Location, identifier.Value),
+            throw new UnexpectedTokenException(token, "type");
+        }
 
-            _ => throw new UnexpectedTokenException(token, "type")
-        };
+        return new IdentifierNode(identifier.Location, identifier.Value);
     }
 
     /// <summary>

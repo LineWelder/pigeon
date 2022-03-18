@@ -98,8 +98,7 @@ public class Compiler
         {
             throw new InvalidTypeCastException(
                 variable.Value.Location,
-                "bigger integer type",
-                variableType.ToString(),
+                null, variableType,
                 "possible value loss"
             );
         }
@@ -159,7 +158,7 @@ public class Compiler
         {
             throw new InvalidTypeCastException(
                 node.Location,
-                value.Type.Name, type.Name,
+                value.Type, type,
                 "cannot change type's signedness"
             );
         }
@@ -170,7 +169,7 @@ public class Compiler
             {
                 throw new InvalidTypeCastException(
                     node.Location,
-                    value?.Type?.Name ?? "bigger integer type", type.Name,
+                    value?.Type, type,
                     "possible value loss"
                 );
             }
@@ -204,7 +203,7 @@ public class Compiler
         {
             throw new InvalidTypeCastException(
                 node.Location,
-                source.Type.Name, destination.Type.Name,
+                source.Type, destination.Type,
                 "the types must be either both signed or unsigned"
             );
         }
@@ -212,7 +211,7 @@ public class Compiler
         if (!explicitTypeCast && destination.Type.Size < source.Type.Size)
         {
             throw new InvalidTypeCastException(
-                node.Location, source.Type.Name, destination.Type.Name,
+                node.Location, source.Type, destination.Type,
                 "possible value loss"
             );
         }
@@ -333,7 +332,7 @@ public class Compiler
         {
             throw new InvalidTypeCastException(
                 node.Location,
-                value.Type.Name, type.Name,
+                value.Type, type,
                 "cannot change type's signedness"
             );
         }
@@ -344,7 +343,7 @@ public class Compiler
             {
                 throw new InvalidTypeCastException(
                     node.Location,
-                    value.Type.Name, type.Name,
+                    value.Type, type,
                     "possible value loss"
                 );
             }
@@ -420,9 +419,10 @@ public class Compiler
                 TypeInfo? innerType = EvaluateType(negation.InnerExpression);
                 if (!(innerType?.IsSigned ?? true))
                 {
+#warning Create UnsignedTypeException
                     throw new InvalidTypeCastException(
                         negation.Location,
-                        innerType.Name, "a signed type",
+                        innerType, innerType,
                         "cannot apply negation to an unsigned type"
                     );
                 }
@@ -433,9 +433,10 @@ public class Compiler
                 TypeInfo function = EvaluateType(functionCall.Function);
                 if (function is not FunctionPointerTypeInfo functionType)
                 {
+#warning Create UncallableTypeException
                     throw new InvalidTypeCastException(
                         functionCall.Location,
-                        function.Name, "function type",
+                        function, function,
                         "uncallable type"
                     );
                 }
@@ -451,7 +452,7 @@ public class Compiler
                 {
                     throw new InvalidTypeCastException(
                         binary.Location,
-                        rightType.Name, leftType.Name,
+                        rightType, leftType,
                         "operand types must be either both signed or unsigned"
                     );
                 }
@@ -475,9 +476,10 @@ public class Compiler
     {
         if (function.Type is not FunctionPointerTypeInfo functionType)
         {
+#warning Create UncallableTypeException
             throw new InvalidTypeCastException(
                 node.Location,
-                function.Type.Name, "function type",
+                function.Type, function.Type,
                 "uncallable type"
             );
         }
@@ -534,7 +536,7 @@ public class Compiler
                 {
                     throw new InvalidTypeCastException(
                         integer.Location,
-                        "bigger integer type", targetType.Name,
+                        null, targetType,
                         "possible value loss"
                     );
                 }
@@ -554,9 +556,10 @@ public class Compiler
 
                 if (!inner.Type.IsSigned)
                 {
+#warning Create UnsignedTypeException
                     throw new InvalidTypeCastException(
                         negation.Location,
-                        inner.Type.Name, "a signed type",
+                        inner.Type, inner.Type,
                         "cannot apply negation to an unsigned type"
                     );
                 }
@@ -585,7 +588,7 @@ public class Compiler
                 {
                     throw new InvalidTypeCastException(
                         binary.Location,
-                        right.Type.Name, left.Type.Name,
+                        right.Type, left.Type,
                         "operand types must be either both signed or unsigned"
                     );
                 }

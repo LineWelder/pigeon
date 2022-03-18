@@ -47,7 +47,9 @@ internal class RegisterManager
     public static string GetRegisterNameFromId(int id, TypeInfo type)
     {
         if (id is < 0 or > 3)
+        {
             throw new ArgumentException($"{id} is not a register id", nameof(id));
+        }
 
         char registerChar = (char)(id + 'a');
 
@@ -158,7 +160,9 @@ internal class RegisterManager
     public void FreeRegister(Value value)
     {
         if (value is not RegisterValue register)
+        {
             return;
+        }
 
         try
         {

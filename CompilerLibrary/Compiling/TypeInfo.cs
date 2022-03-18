@@ -25,7 +25,9 @@ public record TypeInfo(
     {
         long temp = 0;
         for (int i = 0; i < length; i++)
+        {
             temp |= 1L << i;
+        }
 
         return temp;
     }

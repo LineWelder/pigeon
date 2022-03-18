@@ -25,7 +25,9 @@ public static class Debug
         void MakeOffset()
         {
             for (int i = 0; i < offset; i++)
+            {
                 Console.Write(' ');
+            }
         }
 
         MakeOffset();

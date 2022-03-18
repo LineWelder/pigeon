@@ -71,7 +71,9 @@ public class Tokenizer
         {
             currentCharacter = '\0';
             if (currentColumn == -1)
+            {
                 currentColumn = 0;
+            }
 
             ReachedTheEOF = true;
         }
@@ -85,7 +87,9 @@ public class Tokenizer
                 currentLine++;
             }
             else
+            {
                 currentColumn++;
+            }
         }
     }
 
@@ -96,7 +100,9 @@ public class Tokenizer
     private char SkipWhiteSpaces()
     {
         while (currentCharacter != '\0' && char.IsWhiteSpace(currentCharacter))
+        {
             NextCharacter();
+        }
 
         return currentCharacter;
     }
@@ -181,11 +187,16 @@ public class Tokenizer
 
         // End of file
         else if (currentCharacter == '\0')
+        {
             CurrentToken = new Token(
                 currentLocation,
                 TokenType.EndOfFile
             );
+        }
 
-        else throw new UnexpectedCharacterException(currentLocation, currentCharacter);
+        else
+        {
+            throw new UnexpectedCharacterException(currentLocation, currentCharacter);
+        }
     }
 }

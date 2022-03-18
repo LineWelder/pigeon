@@ -69,7 +69,9 @@ public static class Optimizer
 
             case BinaryNodeOperation.Divizion:
                 if (leftOptimized is IntegerNode { Value: 0 })
+                {
                     return new IntegerNode(node.Location, 0);
+                }
 
                 if (rightOptimized is IntegerNode rightInteger)
                 {
@@ -152,7 +154,9 @@ public static class Optimizer
         for (int i = polynom.Count - 1; i >= 0; i--)
         {
             if (polynom[i].Value is not IntegerNode { Value: long value })
+            {
                 continue;
+            }
 
             switch (polynom[i].Operation)
             {
@@ -193,7 +197,9 @@ public static class Optimizer
         for (int i = 0; i < polynom.Count; i++)
         {
             if (i == firstPositiveMononomIndex)
+            {
                 continue;
+            }
 
             result = new BinaryNode(
                 result.Location,

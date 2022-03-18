@@ -41,10 +41,14 @@ public class Compiler
     public static TypeInfo GetTypeInfo(SyntaxNode type)
     {
         if (type is not IdentifierNode identifier)
+        {
             throw new UnexpectedSyntaxNodeException(type, "type identifier");
+        }
 
         if (COMPILED_TYPES.TryGetValue(identifier.Value, out TypeInfo compiledType))
+        {
             return compiledType;
+        }
 
         throw new UnknownIdentifierException(identifier);
     }
@@ -85,16 +89,20 @@ public class Compiler
     {
         TypeInfo variableType = GetTypeInfo(variable.Type);
         if (variable.Value is not IntegerNode valueInteger)
+        {
             throw new UnexpectedSyntaxNodeException(variable.Value, "a number");
+        }
 
         long maximumValue = variableType.MaximumValue;
         if (valueInteger.Value > maximumValue)
+        {
             throw new InvalidTypeCastException(
                 variable.Value.Location,
                 "bigger integer type",
                 variableType.ToString(),
                 "possible value loss"
             );
+        }
 
         string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(variable.Identifier);
         string variableValue = valueInteger.Value.ToString();
@@ -661,7 +669,9 @@ public class Compiler
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
                 if (left is not SymbolValue)
+                {
                     throw new NotLValueException(assignment.Left);
+                }
 
                 GenerateAssignment(assignment, left, assignment.Right);
                 break;

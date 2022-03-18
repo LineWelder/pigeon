@@ -41,7 +41,9 @@ public class Parser
     private void Consume(TokenType type, string expectation)
     {
         if (tokenizer.CurrentToken.Type != type)
+        {
             throw new UnexpectedTokenException(tokenizer.CurrentToken, expectation);
+        }
 
         tokenizer.NextToken();
     }
@@ -144,7 +146,9 @@ public class Parser
     private SyntaxNode ParseExpression(int depth = 0)
     {
         if (depth > 2)
+        {
             return ParsePrimaryExpression();
+        }
 
         SyntaxNode result = ParseExpression(depth + 1);
         
@@ -174,13 +178,17 @@ public class Parser
         List<FunctionArgumentDeclarationNode> argumentList = new();
 
         if (tokenizer.CurrentToken.Type is TokenType.RightParenthesis)
+        {
             goto endOfArgumentList;
+        }
 
         while (true)
         {
             SyntaxNode argumentType = ParseType();
             if (tokenizer.CurrentToken is not StringToken { Type: TokenType.Identifier } name)
+            {
                 throw new UnexpectedTokenException(tokenizer.CurrentToken, "argument name");
+            }
 
             argumentList.Add(new FunctionArgumentDeclarationNode(
                 argumentType.Location,
@@ -270,7 +278,9 @@ public class Parser
         List<SyntaxNode> statementList = new();
 
         while (tokenizer.CurrentToken.Type is not TokenType.RightCurlyBrace)
+        {
             statementList.Add(ParseStatement());
+        }
 
         tokenizer.NextToken();
         return statementList.ToArray();
@@ -308,7 +318,9 @@ public class Parser
                 // It means that we have "smth = ...",
                 // so we expect the name instead of =
                 if (type is null)
+                {
                     throw new UnexpectedTokenException(currentToken, "variable name");
+                }
 
                 SyntaxNode value = ParseExpression();
                 Consume(TokenType.Semicolon, ";");

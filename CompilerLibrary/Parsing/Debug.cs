@@ -56,8 +56,11 @@ public static class Debug
                 {
                     PrintSyntaxNode(functionDeclaration.ArgumentList[0].Type);
                     Console.Write($" {functionDeclaration.ArgumentList[0].Identifier}");
+
                     if (i < functionDeclaration.ArgumentList.Length - 1)
+                    {
                         Console.Write(", ");
+                    }
                 }
                 Console.WriteLine(')');
 

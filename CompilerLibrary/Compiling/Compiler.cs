@@ -636,26 +636,18 @@ public class Compiler
         expression = Optimizer.OptimizeExpression(expression);
         Value value;
 
-        if (expression is TypeCastNode typeCast)
+        if (expression is TypeCastNode typeCast
+         && GetTypeInfo(typeCast.Type) == destination.StrongType)
         {
-            TypeInfo typeInfo = GetTypeInfo(typeCast.Type);
-            if (typeInfo == destination.StrongType)
-            {
-                value = CompileValue(typeCast.Value);
-                GenerateMov(
-                    node,
-                    destination, value,
-                    true
-                );
-
-                goto endMov;
-            }
+            value = CompileValue(typeCast.Value);
+            GenerateMov(node, destination, value, true);
+        }
+        else
+        {
+            value = CompileValue(expression, destination.StrongType);
+            GenerateMov(node, destination, value);
         }
 
-        value = CompileValue(expression, destination.StrongType);
-        GenerateMov(node, destination, value);
-
-    endMov:
         registerManager.FreeRegister(value);
     }
 

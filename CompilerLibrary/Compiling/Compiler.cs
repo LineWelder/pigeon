@@ -487,15 +487,14 @@ public class Compiler
     /// <summary>
     /// Generates a function call
     /// </summary>
-    /// <param name="node">The node the call happens within</param>
-    /// <param name="function">The function to call</param>
     /// <param name="mustReturnValue">Whether the function must return a value</param>
     /// <returns>The location of the returned value</returns>
-    private Value? GenerateFunctionCall(SyntaxNode node, Value function, bool mustReturnValue)
+    private Value? GenerateFunctionCall(FunctionCallNode functionCall, bool mustReturnValue)
     {
+        Value function = CompileValue(functionCall.Function);
         if (function.Type is not FunctionPointerTypeInfo functionType)
         {
-            throw new NotCallableTypeException(node.Location, function.Type);
+            throw new NotCallableTypeException(functionCall.Location, function.Type);
         }
 
         RegisterValue? returnRegister = null;
@@ -504,14 +503,14 @@ public class Compiler
             if (functionType.FunctionInfo.ReturnType is null)
             {
                 throw new NoReturnValueException(
-                    node.Location,
+                    functionCall.Location,
                     function.Type.Name
                 );
             }
 
             // The register the function result is returned in
             (returnRegister, int oldValueNewRegister) = registerManager.RequireRegister(
-                node, functionType.FunctionInfo.ReturnType,
+                functionCall, functionType.FunctionInfo.ReturnType,
                 RegisterManager.RETURN_REGISTER_ID
             );
 
@@ -587,8 +586,7 @@ public class Compiler
                 return inner;
 
             case FunctionCallNode functionCall:
-                Value function = CompileValue(functionCall.Function);
-                return GenerateFunctionCall(functionCall, function, true)!;
+                return GenerateFunctionCall(functionCall, true)!;
 
             case BinaryNode binary:
                 TypeInfo? resultType = EvaluateType(binary) ?? targetType;
@@ -712,8 +710,7 @@ public class Compiler
                 break;
 
             case FunctionCallNode functionCall:
-                Value function = CompileValue(functionCall.Function);
-                GenerateFunctionCall(functionCall, function, false);
+                GenerateFunctionCall(functionCall, false);
                 break;
 
             default:

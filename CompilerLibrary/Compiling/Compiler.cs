@@ -390,7 +390,23 @@ public class Compiler
     private SymbolValue FindSymbol(IdentifierNode identifier)
     {
         string symbol = AssemblyGenerator.GetAssemblySymbol(identifier.Value);
-        if (variables.TryGetValue(symbol, out VariableInfo? variable))
+        int argumentIndex = Array.FindIndex(
+            currentFunction.Arguments,
+            x => x.Name == identifier.Value
+        );
+
+        if (argumentIndex >= 0)
+        {
+            // [esp - 12] = arg1        12 = (1 + 2) * ARGUMENT_OFFSET
+            // [esp - 8]  = arg0        8  = (0 + 2) * ARGUMENT_OFFSET
+            // [esp - 4]  = return eip
+            // [esp]      = old ebp
+            return new SymbolValue(
+                currentFunction.Arguments[argumentIndex].Type,
+                "ebp", -(argumentIndex + 2) * ARGUMENT_OFFSET
+            );
+        }
+        else if (variables.TryGetValue(symbol, out VariableInfo? variable))
         {
             return new SymbolValue(variable.Type, variable.AssemblySymbol, 0);
         }

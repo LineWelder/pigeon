@@ -6,15 +6,26 @@ using CompilerLibrary.Compiling;
 using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
+#warning TODO Add function arguments to readme.md
+#warning TODO Revise GenerateAssignment value freeing
+#warning TODO Rename _start to start
+
 const string code = @"
-i32 sum(i32 a, i32 b)
+i32 test = 29;
+
+i32 times_2(i32 val)
 {
-    return a + b;
+    return val + val;
+}
+
+i32 f(i32 val)
+{
+    return test + times_2(val);
 }
 
 i32 main()
 {
-    return sum(sum(1, 2), sum(3, 4));
+    return f(input);
 }
 ";
 

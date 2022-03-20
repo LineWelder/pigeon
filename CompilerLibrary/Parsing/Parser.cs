@@ -295,17 +295,26 @@ public class Parser
         // return type declaration
         SyntaxNode firstNode = ParseType();
 
-        SyntaxNode type = null;
-        string name = (firstNode as IdentifierNode)?.Value;
+        SyntaxNode? type = null;
+        string name;
         Location location = firstNode.Location;
 
-        // If it is not, we change the type and name
-        if (tokenizer.CurrentToken is StringToken { Type: TokenType.Identifier } trueName)
+        // If the next token is an identifier then it is the real name
+        if (tokenizer.CurrentToken is StringToken { Type: TokenType.Identifier } realName)
         {
             type = firstNode;
-            name = trueName.Value;
-
+            name = realName.Value;
             tokenizer.NextToken();
+        }
+        // If the first token was the name
+        else if (firstNode is IdentifierNode identifierNode)
+        {
+            name = identifierNode.Value;
+        }
+        // Else it is illegal syntax and we expect the name go after the type
+        else
+        {
+            throw new UnexpectedTokenException(tokenizer.CurrentToken, "name");
         }
 
         Token currentToken = tokenizer.CurrentToken;

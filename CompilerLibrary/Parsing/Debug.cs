@@ -133,7 +133,10 @@ public static class Debug
 
             case ReturnNode @return:
                 Console.Write("return ");
-                PrintSyntaxNode(@return.InnerExpression);
+                if (@return.InnerExpression is not null)
+                {
+                    PrintSyntaxNode(@return.InnerExpression);
+                }
                 Console.Write(';');
 
                 break;

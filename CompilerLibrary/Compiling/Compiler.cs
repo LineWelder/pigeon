@@ -20,6 +20,8 @@ public class Compiler
         { "u8",  new TypeInfo(Size: 1, Name: "u8",  IsSigned: false) }
     };
 
+    private const int ARGUMENT_OFFSET = 4;
+
     private readonly Dictionary<string, VariableInfo> variables = new()
     {
         { "_input", new(SourceLocation: new("", 0, 0), AssemblySymbol: "_input",
@@ -390,13 +392,13 @@ public class Compiler
         string symbol = AssemblyGenerator.GetAssemblySymbol(identifier.Value);
         if (variables.TryGetValue(symbol, out VariableInfo? variable))
         {
-            return new SymbolValue(variable.Type, variable.AssemblySymbol);
+            return new SymbolValue(variable.Type, variable.AssemblySymbol, 0);
         }
         else if (functions.TryGetValue(symbol, out FunctionInfo? function))
         {
             return new SymbolValue(
                 new FunctionPointerTypeInfo(function),
-                function.AssemblySymbol
+                function.AssemblySymbol, 0
             );
         }
         else

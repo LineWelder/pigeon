@@ -7,7 +7,8 @@ internal record Value(TypeInfo? Type)
         && (a, b) switch
            {
                (SymbolValue symbolA, SymbolValue symbolB)
-                   => symbolA.Symbol == symbolB.Symbol,
+                   => symbolA.Symbol == symbolB.Symbol
+                   && symbolA.Offset == symbolB.Offset,
 
                (RegisterValue registerA, RegisterValue registerB)
                    => registerA.RegisterManager == registerB.RegisterManager
@@ -30,12 +31,32 @@ internal record StronglyTypedValue(TypeInfo Type)
     public TypeInfo StrongType => Type!;
 }
 
-internal record SymbolValue(TypeInfo Type, string Symbol)
+internal record SymbolValue(TypeInfo Type, string Symbol, int Offset)
     : StronglyTypedValue(Type)
 {
+    /// <summary>
+    /// Represents the address written within the square brackets in the assembly code
+    /// [Symbol + Offset]
+    /// </summary>
+    public string AddressString
+    {
+        get
+        {
+            string offsetAppendix = Offset switch
+            {
+                < 0 => $" - {-Offset}",
+                > 0 => $" + {Offset}",
+                _ => ""
+            };
+
+            return $"{Symbol}{offsetAppendix}";
+        }
+    }
+
     public override string ToString()
         => Type is FunctionPointerTypeInfo
-               ? Symbol : $"{StrongType.AssemblyName} [{Symbol}]";
+               ? AddressString
+               : $"{StrongType.AssemblyName} [{AddressString}]";
 }
 
 /// <param name="RegisterManager">The register manager managing the value</param>

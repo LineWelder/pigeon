@@ -57,9 +57,11 @@ internal class AssemblyGenerator
         instruction.Append((arguments[0], arguments[1]) switch
         {
             (SymbolValue symbolArgument0, RegisterValue)
-                => $"[{symbolArgument0.Symbol}], {arguments[1]}",
+                => $"[{symbolArgument0.AddressString}], {arguments[1]}",
+
             (RegisterValue, SymbolValue symbolArgument1)
-                => $"{arguments[0]}, [{symbolArgument1.Symbol}]",
+                => $"{arguments[0]}, [{symbolArgument1.AddressString}]",
+
             _   => $"{arguments[0]}, {arguments[1]}"
         });
         return instruction.ToString();

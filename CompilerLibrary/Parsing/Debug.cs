@@ -147,7 +147,7 @@ public static class Debug
                 Console.Write("(");
                 for (int i = 0; i < functionCall.Arguments.Length; i++)
                 {
-                    Console.Write(functionCall.Arguments[i]);
+                    PrintSyntaxNode(functionCall.Arguments[i]);
 
                     if (i < functionCall.Arguments.Length - 1)
                     {

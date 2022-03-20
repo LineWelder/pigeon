@@ -8,7 +8,6 @@ using CompilerLibrary.Tokenizing;
 
 #warning TODO Add function arguments to readme.md
 #warning TODO Revise GenerateAssignment value freeing
-#warning TODO Rename _start to start
 
 const string code = @"
 i32 test = 29;

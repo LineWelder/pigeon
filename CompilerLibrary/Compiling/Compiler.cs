@@ -403,7 +403,7 @@ public class Compiler
             // [esp]      = old ebp
             return new SymbolValue(
                 currentFunction.Arguments[argumentIndex].Type,
-                "ebp", -(argumentIndex + 2) * ARGUMENT_OFFSET
+                "ebp", (argumentIndex + 2) * ARGUMENT_OFFSET
             );
         }
         else if (variables.TryGetValue(symbol, out VariableInfo? variable))

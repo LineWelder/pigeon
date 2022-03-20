@@ -497,6 +497,22 @@ public class Compiler
             throw new NotCallableTypeException(functionCall.Location, function.Type);
         }
 
+        int stackSpaceAllocated = functionCall.Arguments.Length * ARGUMENT_OFFSET;
+        assemblyGenerator.EmitInstruction("sub", "esp", stackSpaceAllocated);
+
+        for (int i = 0; i < functionCall.Arguments.Length; i++)
+        {
+            SymbolValue argumentLocation = new(
+                functionType.FunctionInfo.Arguments[i].Type,
+                "esp", i * ARGUMENT_OFFSET
+            );
+
+            GenerateAssignment(
+                functionCall,
+                argumentLocation, functionCall.Arguments[i]
+            );
+        }
+
         RegisterValue? returnRegister = null;
         if (mustReturnValue)
         {
@@ -527,6 +543,8 @@ public class Compiler
         }
 
         assemblyGenerator.EmitInstruction("call", function);
+        assemblyGenerator.EmitInstruction("add", "esp", stackSpaceAllocated);
+
         return returnRegister;
     }
 

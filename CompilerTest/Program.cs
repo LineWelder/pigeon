@@ -14,7 +14,7 @@ i32 sum(i32 a, i32 b)
 
 i32 main()
 {
-    return sum();
+    return sum(sum(1, 2), sum(3, 4));
 }
 ";
 
@@ -27,16 +27,6 @@ Compiler compiler = new();
 try
 {
     SyntaxNode[] nodes = parser.ParseFile();
-
-    // FunctionDeclarationNode main = nodes[4] as FunctionDeclarationNode;
-    // AssignmentNode assignment = main?.Body?[0] as AssignmentNode;
-    // SyntaxNode expression = assignment?.Right;
-    // SyntaxNode optimized = Optimizer.OptimizeExpression(expression);
-    
-    // Debug.PrintSyntaxNode(expression);
-    // Console.WriteLine();
-    // Debug.PrintSyntaxNode(optimized);
-    // Console.WriteLine();
 
     compiler.RegisterDeclarations(nodes);
     Console.WriteLine(compiler.CompileAll());

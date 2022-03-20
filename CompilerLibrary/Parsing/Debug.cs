@@ -52,12 +52,12 @@ public static class Debug
                 }
                 Console.Write($"{functionDeclaration.Identifier}(");
 
-                for (int i = 0; i < functionDeclaration.ArgumentList.Length; i++)
+                for (int i = 0; i < functionDeclaration.Arguments.Length; i++)
                 {
-                    PrintSyntaxNode(functionDeclaration.ArgumentList[0].Type);
-                    Console.Write($" {functionDeclaration.ArgumentList[0].Identifier}");
+                    PrintSyntaxNode(functionDeclaration.Arguments[0].Type);
+                    Console.Write($" {functionDeclaration.Arguments[0].Identifier}");
 
-                    if (i < functionDeclaration.ArgumentList.Length - 1)
+                    if (i < functionDeclaration.Arguments.Length - 1)
                     {
                         Console.Write(", ");
                     }

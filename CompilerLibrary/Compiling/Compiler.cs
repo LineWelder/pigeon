@@ -66,10 +66,10 @@ public class Compiler
     /// <param name="function">The function to register</param>
     public void RegisterFunction(FunctionDeclarationNode function)
     {
-        FunctionArgument[] arguments = new FunctionArgument[function.ArgumentList.Length];
-        for (int i = 0; i < function.ArgumentList.Length; i++)
+        FunctionArgument[] arguments = new FunctionArgument[function.Arguments.Length];
+        for (int i = 0; i < function.Arguments.Length; i++)
         {
-            FunctionArgumentDeclarationNode argument = function.ArgumentList[i];
+            FunctionArgumentDeclarationNode argument = function.Arguments[i];
             arguments[i] = new FunctionArgument(
                 argument.Location,
                 GetTypeInfo(argument.Type),

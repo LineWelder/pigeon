@@ -143,7 +143,19 @@ public static class Debug
 
             case FunctionCallNode functionCall:
                 PrintSyntaxNode(functionCall.Function);
-                Console.Write("()");
+
+                Console.Write("(");
+                for (int i = 0; i < functionCall.Arguments.Length; i++)
+                {
+                    Console.Write(functionCall.Arguments[i]);
+
+                    if (i < functionCall.Arguments.Length - 1)
+                    {
+                        Console.Write(", ");
+                    }
+                }
+                Console.Write(")");
+
                 break;
 
             default:

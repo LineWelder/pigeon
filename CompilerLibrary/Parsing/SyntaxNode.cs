@@ -81,7 +81,8 @@ public record TypeCastNode(
 /// </summary>
 public record FunctionCallNode(
     Location Location,
-    SyntaxNode Function
+    SyntaxNode Function,
+    SyntaxNode[] Arguments
 ) : SyntaxNode(Location);
 
 /// <summary>

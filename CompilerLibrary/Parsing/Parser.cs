@@ -126,10 +126,9 @@ public class Parser
                 tokenizer.NextToken();
                 result = new FunctionCallNode(
                     result.Location,
-                    result
+                    result, ParseFunctionCallArguments()
                 );
 
-                Consume(TokenType.RightParenthesis, ")");
                 goto lookForPostfix;
         }
 
@@ -169,10 +168,44 @@ public class Parser
     }
 
     /// <summary>
+    /// Parses arguments for a function call skipping the left parenthesis
+    /// </summary>
+    /// <returns>The parsed nodes</returns>
+    private SyntaxNode[] ParseFunctionCallArguments()
+    {
+        List<SyntaxNode> argumentList = new();
+
+        if (tokenizer.CurrentToken.Type is TokenType.RightParenthesis)
+        {
+            goto endOfArgumentList;
+        }
+
+        while (true)
+        {
+            argumentList.Add(ParseExpression());
+
+            switch (tokenizer.CurrentToken.Type)
+            {
+                case TokenType.RightParenthesis:
+                    goto endOfArgumentList;
+
+                case not TokenType.Coma:
+                    throw new UnexpectedTokenException(tokenizer.CurrentToken, ", or )");
+            }
+
+            tokenizer.NextToken();
+        }
+
+    endOfArgumentList:
+        tokenizer.NextToken();
+        return argumentList.ToArray();
+    }
+
+    /// <summary>
     /// Parses arguments for function declaration skipping the left parenthesis
     /// </summary>
     /// <returns>The parsed nodes</returns>
-    private FunctionArgumentDeclarationNode[] ParseArgumentListDeclaration()
+    private FunctionArgumentDeclarationNode[] ParseFunctionArgumentsDeclaration()
     {
         List<FunctionArgumentDeclarationNode> argumentList = new();
 
@@ -339,7 +372,7 @@ public class Parser
 
             // It is a function declaration
             case TokenType.LeftParenthesis:
-                FunctionArgumentDeclarationNode[] arguments = ParseArgumentListDeclaration();
+                FunctionArgumentDeclarationNode[] arguments = ParseFunctionArgumentsDeclaration();
                 SyntaxNode[] body = ParseFunctionBodyDeclaration();
 
                 return new FunctionDeclarationNode(

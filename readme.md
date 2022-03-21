@@ -1,6 +1,5 @@
 # Pigeon - a simple programming language made for fun
 ## Features to implement
-- Function arguments
 - Local variables
 - Global initializations, _start and i32 main()
 - Command line interface
@@ -41,15 +40,27 @@ i16 test_add_2()
 ```
 The return statement ends current function execution. The returned value becomes the value
 of the function call, so `test_add_2()` will be equal to `31`.
+#### Taking values from outside
+```
+i16 add(i16 a, i16 b)
+{
+    return a + b;
+}
+```
+A function can take multiple values to operate on, they can be accessed
+withing the function body just as normal variables.<br/>
+**If there is a variable with the same name as an argument, it will
+be unaccessable from within the function body since all the mentions of it
+will be interpreted as the argument mentions.**
 #### Calling functions
 ```
 func();
-```
-```
 test = 4 + test_add_2();
+test = sum(2, 3);
 ```
 Functions can be call either in an expression or in a separate statement. However, only
-functions that return a value can be called within an expression.
+functions that return a value can be called within an expression.<br/>
+To assign values to the function arguments they should be simply listed in the parentheses.
 ### Variable assignment
 ```
 test = 2 + test;

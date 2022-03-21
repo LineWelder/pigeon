@@ -6,8 +6,6 @@ using CompilerLibrary.Compiling;
 using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
-#warning TODO Add function arguments to readme.md
-
 const string code = @"
 i32 a = 0;
 i32 b = 0;

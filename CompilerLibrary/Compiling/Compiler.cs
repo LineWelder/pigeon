@@ -89,6 +89,28 @@ public class Compiler
     }
 
     /// <summary>
+    /// Returns true if the identifier is declared and returns
+    /// the declaration location through declarationLocation
+    /// </summary>
+    private bool IsDeclared(string identifier, out Location? declarationLocation)
+    {
+        if (variables.TryGetValue(identifier, out VariableInfo? variable))
+        {
+            declarationLocation = variable.SourceLocation;
+            return true;
+        }
+
+        if (functions.TryGetValue(identifier, out FunctionInfo? function))
+        {
+            declarationLocation = function.SourceLocation;
+            return true;
+        }
+
+        declarationLocation = null;
+        return false;
+    }
+
+    /// <summary>
     /// Adds a function to the declared functions list
     /// </summary>
     /// <param name="function">The function to register</param>
@@ -107,6 +129,13 @@ public class Compiler
 
         string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(function.Identifier);
 
+        if (IsDeclared(assemblySymbol, out Location? previousDeclarationLocation))
+        {
+            throw new IdentifierAlreadyDeclaredException(
+                function, previousDeclarationLocation!
+            );
+        }
+
         functions.Add(assemblySymbol, new FunctionInfo(
             function.Location,
             assemblySymbol,
@@ -124,6 +153,13 @@ public class Compiler
     {
         TypeInfo variableType = GetTypeInfo(variable.Type);
         string assemblySymbol = AssemblyGenerator.GetAssemblySymbol(variable.Identifier);
+
+        if (IsDeclared(assemblySymbol, out Location? previousDeclarationLocation))
+        {
+            throw new IdentifierAlreadyDeclaredException(
+                variable, previousDeclarationLocation!
+            );
+        }
 
         variables.Add(assemblySymbol, new VariableInfo(
             variable.Location,

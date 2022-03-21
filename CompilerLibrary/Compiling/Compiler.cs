@@ -388,10 +388,13 @@ public class Compiler
     private SymbolValue FindSymbol(IdentifierNode identifier)
     {
         string symbol = AssemblyGenerator.GetAssemblySymbol(identifier.Value);
-        int argumentIndex = Array.FindIndex(
-            currentFunction.Arguments,
-            x => x.Name == identifier.Value
-        );
+        int argumentIndex =
+            currentFunction is null
+            ? -1
+            : Array.FindIndex(
+                currentFunction.Arguments,
+                x => x.Name == identifier.Value
+            );
 
         if (argumentIndex >= 0)
         {
@@ -400,7 +403,7 @@ public class Compiler
             // [esp - 4]  = return eip
             // [esp]      = old ebp
             return new SymbolValue(
-                currentFunction.Arguments[argumentIndex].Type,
+                currentFunction!.Arguments[argumentIndex].Type,
                 "ebp", (argumentIndex + 2) * ARGUMENT_OFFSET
             );
         }
@@ -744,6 +747,8 @@ public class Compiler
     /// <returns>The generated FASM code</returns>
     public string CompileAll()
     {
+        FindSymbol(new IdentifierNode(new Location("", 0, 0), "main"));
+
         assemblyGenerator = new AssemblyGenerator();
         registerManager = new RegisterManager();
 

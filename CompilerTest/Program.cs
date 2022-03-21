@@ -15,12 +15,6 @@ i32 sum(i32 a, i32 b)
 {
     return a + b;
 }
-
-i32 main()
-{
-    write(c);
-    return 0;
-}
 ";
 
 byte[] byteArray = Encoding.ASCII.GetBytes(code);

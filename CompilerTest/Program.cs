@@ -10,21 +10,31 @@ using CompilerLibrary.Tokenizing;
 #warning TODO Revise GenerateAssignment value freeing
 
 const string code = @"
-i32 test = 29;
+i32 a = 0;
+i32 b = 0;
 
-i32 times_2(i32 val)
+i32 sum(i32 a, i32 b)
 {
-    return val + val;
+    return a + b;
 }
 
-i32 f(i32 val)
+input()
 {
-    return test + times_2(val);
+    a = read();
+    b = read();
+}
+
+calc()
+{
+    write(a + b);
+    write(a - b);
 }
 
 i32 main()
 {
-    write( f(read()) );
+    input();
+    calc();
+
     return 0;
 }
 ";

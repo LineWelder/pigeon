@@ -11,9 +11,13 @@ i32 a = read();
 i32 b = read();
 i32 c = sum(a, b);
 
-i32 sum(i32 a, i32 b)
+i32 main(i32 a, i32 b)
 {
     return a + b;
+}
+
+i32 main()
+{
 }
 ";
 

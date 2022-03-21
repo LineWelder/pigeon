@@ -1,7 +1,6 @@
 # Pigeon - a simple programming language made for fun
 ## Features to implement
 - Local variables
-- Global initializations, _start and i32 main()
 - Command line interface
 - Branching and loops
 - Pointers
@@ -31,6 +30,7 @@ Inside the curly braces expected statements - the code that should be executed w
 function is called.
 Inside such a function `return;` statement can be used to immediately end the function
 execution.
+**Any program must containg an `i32 main()` function. The execution starts from there.**
 #### Returning values from functions
 ```
 i16 test_add_2()

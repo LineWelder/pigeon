@@ -20,6 +20,9 @@ public class Compiler
         { "u8",  new TypeInfo(Size: 1, Name: "u8",  IsSigned: false) }
     };
 
+    private static readonly FunctionPointerTypeInfo MAIN_SIGNATURE
+        = new(COMPILED_TYPES["i32"], Array.Empty<TypeInfo>());
+
     private const int ARGUMENT_OFFSET = 4;
 
     private readonly Dictionary<string, VariableInfo> variables = new();
@@ -747,7 +750,22 @@ public class Compiler
     /// <returns>The generated FASM code</returns>
     public string CompileAll()
     {
-        FindSymbol(new IdentifierNode(new Location("", 0, 0), "main"));
+        if (!functions.TryGetValue("_main", out FunctionInfo? main))
+        {
+            throw new UnknownIdentifierException(
+                new IdentifierNode(new Location("", 0, 0), "main")
+            );
+        }
+        FunctionPointerTypeInfo foundMainSignature = new(main);
+        if (!foundMainSignature.Equals(MAIN_SIGNATURE))
+        {
+            throw new InvalidTypeCastException(
+                new Location("", 0, 0),
+                fromType: foundMainSignature,
+                toType: MAIN_SIGNATURE,
+                "main function has incorrect signature"
+            );
+        }
 
         assemblyGenerator = new AssemblyGenerator();
         registerManager = new RegisterManager();

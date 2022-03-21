@@ -26,6 +26,7 @@ public class IdentifierAlreadyDeclaredException : CompilerException
         {
             VariableDeclarationNode variable => variable.Identifier,
             FunctionDeclarationNode function => function.Identifier,
+            FunctionArgumentDeclarationNode argument => argument.Identifier,
             _ => throw new Exception("Unexpected type")
         };
 }

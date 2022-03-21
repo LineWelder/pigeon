@@ -120,6 +120,17 @@ public class Compiler
         for (int i = 0; i < function.Arguments.Length; i++)
         {
             FunctionArgumentDeclarationNode argument = function.Arguments[i];
+
+            FunctionArgument? samelyNamedArgument = Array.Find(
+                arguments, x => x is not null && x.Name == argument.Identifier
+            );
+            if (samelyNamedArgument is not null)
+            {
+                throw new IdentifierAlreadyDeclaredException(
+                    argument, samelyNamedArgument.SourceLocation
+                );
+            }
+
             arguments[i] = new FunctionArgument(
                 argument.Location,
                 GetTypeInfo(argument.Type),

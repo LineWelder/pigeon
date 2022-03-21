@@ -24,7 +24,8 @@ i32 f(i32 val)
 
 i32 main()
 {
-    return f(input);
+    write( f(read()) );
+    return 0;
 }
 ";
 

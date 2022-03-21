@@ -22,12 +22,37 @@ public class Compiler
 
     private const int ARGUMENT_OFFSET = 4;
 
-    private readonly Dictionary<string, VariableInfo> variables = new()
+    private readonly Dictionary<string, VariableInfo> variables = new();
+    private readonly Dictionary<string, FunctionInfo> functions = new()
     {
-        { "_input", new(SourceLocation: new("", 0, 0), AssemblySymbol: "_input",
-            Type: COMPILED_TYPES["i32"], AssemblyValue: "0") }
+        {
+            "_read",
+            new(
+                SourceLocation: new("", 0, 0),
+                AssemblySymbol: "_read",
+                ReturnType: COMPILED_TYPES["i32"],
+                Arguments: Array.Empty<FunctionArgument>(),
+                Body: Array.Empty<SyntaxNode>()
+            )
+        },
+        {
+            "_write",
+            new(
+                SourceLocation: new("", 0, 0),
+                AssemblySymbol: "_write",
+                ReturnType: null,
+                Arguments: new[]
+                {
+                    new FunctionArgument(
+                        SourceLocation: new("", 0, 0),
+                        Type: COMPILED_TYPES["i32"],
+                        Name: "value"
+                    )
+                },
+                Body: Array.Empty<SyntaxNode>()
+            )
+        },
     };
-    private readonly Dictionary<string, FunctionInfo> functions = new();
 
     private FunctionInfo currentFunction;
     private bool needsEndingLabel;
@@ -755,6 +780,11 @@ public class Compiler
 
         foreach (var pair in functions)
         {
+            if (pair.Key == "_read" || pair.Key == "_write")
+            {
+                continue;
+            }
+
             currentFunction = pair.Value;
             needsEndingLabel = false;
 
@@ -789,6 +819,37 @@ public class Compiler
 
             registerManager.ResetUsedRegisters();
         }
+        
+        
+
+        assemblyGenerator.EmitInstruction("sub", "esp", "12");
+        assemblyGenerator.EmitInstruction("lea", "eax", "[esp + 8]");
+        assemblyGenerator.EmitInstruction("mov", "[esp + 4]", "eax");
+        assemblyGenerator.EmitInstruction("mov", "dword [esp]", "scanf_format");
+        assemblyGenerator.EmitInstruction("call", "[scanf]");
+        assemblyGenerator.EmitInstruction("mov", "eax", "[esp + 8]");
+        assemblyGenerator.EmitInstruction("add", "esp", "12");
+
+        assemblyGenerator.EmitSymbol("_read");
+        assemblyGenerator.EmitInstructionToText("push", "ebp");
+        assemblyGenerator.EmitInstructionToText("mov", "ebp", "esp");
+        assemblyGenerator.InsertFunctionCode();
+        assemblyGenerator.EmitInstructionToText("leave");
+        assemblyGenerator.EmitInstructionToText("ret");
+
+        assemblyGenerator.EmitInstruction("sub", "esp", "8");
+        assemblyGenerator.EmitInstruction("mov", "eax", "[ebp + 8]");
+        assemblyGenerator.EmitInstruction("mov", "[esp + 4]", "eax");
+        assemblyGenerator.EmitInstruction("mov", "dword [esp]", "printf_format");
+        assemblyGenerator.EmitInstruction("call", "[printf]");
+        assemblyGenerator.EmitInstruction("add", "esp", "8");
+
+        assemblyGenerator.EmitSymbol("_write");
+        assemblyGenerator.EmitInstructionToText("push", "ebp");
+        assemblyGenerator.EmitInstructionToText("mov", "ebp", "esp");
+        assemblyGenerator.InsertFunctionCode();
+        assemblyGenerator.EmitInstructionToText("leave");
+        assemblyGenerator.EmitInstructionToText("ret");
 
         return assemblyGenerator.LinkAssembly();
     }

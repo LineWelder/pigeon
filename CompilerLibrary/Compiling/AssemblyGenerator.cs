@@ -131,18 +131,7 @@ entry start
 include 'include\win32a.inc'"
         );
         
-        EmitInstruction("push", "_input");
-        EmitInstruction("push", "scanf_format");
-        EmitInstruction("call", "[scanf]");
-        EmitInstruction("add", "esp", "8");
-
         EmitInstruction("call", "_main");
-
-        EmitInstruction("push", "eax");
-        EmitInstruction("push", "printf_format");
-        EmitInstruction("call", "[printf]");
-        EmitInstruction("add", "esp", "8");
-
         EmitInstruction("ret");
 
         EmitSymbol("start");

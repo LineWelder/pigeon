@@ -7,31 +7,10 @@ using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 const string code = @"
-i32 a = 0;
-i32 b = 0;
-
-i32 sum(i32 a, i32 b)
-{
-    return a + b;
-}
-
-input()
-{
-    a = read();
-    b = read();
-}
-
-calc()
-{
-    write(a + b);
-    write(a - b);
-}
+i32 a = 2;
 
 i32 main()
 {
-    input();
-    calc();
-
     return 0;
 }
 ";

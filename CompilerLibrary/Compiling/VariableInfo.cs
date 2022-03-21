@@ -1,4 +1,6 @@
-﻿namespace CompilerLibrary.Compiling;
+﻿using CompilerLibrary.Parsing;
+
+namespace CompilerLibrary.Compiling;
 
 /// <summary>
 /// Represents a compiled variable
@@ -7,5 +9,5 @@ public record VariableInfo(
     Location SourceLocation,
     string AssemblySymbol,
     TypeInfo Type,
-    string AssemblyValue
+    SyntaxNode ValueExpression
 );

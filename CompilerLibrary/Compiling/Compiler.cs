@@ -523,7 +523,10 @@ public class Compiler
         }
 
         int stackSpaceAllocated = functionCall.Arguments.Length * ARGUMENT_OFFSET;
-        assemblyGenerator.EmitInstruction("sub", "esp", stackSpaceAllocated);
+        if (stackSpaceAllocated > 0)
+        {
+            assemblyGenerator.EmitInstruction("sub", "esp", stackSpaceAllocated);
+        }
 
         for (int i = 0; i < functionCall.Arguments.Length; i++)
         {
@@ -568,7 +571,10 @@ public class Compiler
         }
 
         assemblyGenerator.EmitInstruction("call", function);
-        assemblyGenerator.EmitInstruction("add", "esp", stackSpaceAllocated);
+        if (stackSpaceAllocated > 0)
+        {
+            assemblyGenerator.EmitInstruction("add", "esp", stackSpaceAllocated);
+        }
 
         return returnRegister;
     }

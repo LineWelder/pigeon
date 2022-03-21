@@ -130,12 +130,6 @@ use32
 entry start
 include 'include\win32a.inc'"
         );
-        
-        EmitInstruction("call", "_main");
-        EmitInstruction("ret");
-
-        EmitSymbol("start");
-        InsertFunctionCode();
 
         builder.Append("\n\nsection '.text' readable executable\n\n");
         builder.Append(textSection);

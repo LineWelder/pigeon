@@ -747,34 +747,6 @@ public class Compiler
         assemblyGenerator = new AssemblyGenerator();
         registerManager = new RegisterManager();
 
-        foreach (var pair in variables)
-        {
-            VariableInfo variable = pair.Value;
-
-            if (variable.ValueExpression is not IntegerNode valueInteger)
-            {
-                throw new UnexpectedSyntaxNodeException(
-                    variable.ValueExpression, "a number"
-                );
-            }
-
-            long maximumValue = variable.Type.MaximumValue;
-            if (valueInteger.Value > maximumValue)
-            {
-                throw new InvalidTypeCastException(
-                    variable.ValueExpression.Location,
-                    null, variable.Type,
-                    "possible value loss"
-                );
-            }
-
-            string variableValue = valueInteger.Value.ToString();
-            assemblyGenerator.EmitVariable(
-                pair.Key, pair.Value.Type.AssemblyDeclaration,
-                variableValue
-            );
-        }
-
         foreach (var pair in functions)
         {
             if (pair.Key == "_read" || pair.Key == "_write")
@@ -816,8 +788,40 @@ public class Compiler
 
             registerManager.ResetUsedRegisters();
         }
-        
-        
+
+        foreach (var pair in variables)
+        {
+            VariableInfo variable = pair.Value;
+
+            if (variable.ValueExpression is not IntegerNode valueInteger)
+            {
+                throw new UnexpectedSyntaxNodeException(
+                    variable.ValueExpression, "a number"
+                );
+            }
+
+            long maximumValue = variable.Type.MaximumValue;
+            if (valueInteger.Value > maximumValue)
+            {
+                throw new InvalidTypeCastException(
+                    variable.ValueExpression.Location,
+                    null, variable.Type,
+                    "possible value loss"
+                );
+            }
+
+            string variableValue = valueInteger.Value.ToString();
+            assemblyGenerator.EmitVariable(
+                pair.Key, pair.Value.Type.AssemblyDeclaration,
+                variableValue
+            );
+        }
+
+        assemblyGenerator.EmitInstruction("call", "_main");
+        assemblyGenerator.EmitInstruction("ret");
+
+        assemblyGenerator.EmitSymbol("start");
+        assemblyGenerator.InsertFunctionCode();
 
         assemblyGenerator.EmitInstruction("sub", "esp", "12");
         assemblyGenerator.EmitInstruction("lea", "eax", "[esp + 8]");

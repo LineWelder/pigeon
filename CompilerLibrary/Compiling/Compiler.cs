@@ -817,6 +817,55 @@ public class Compiler
         assemblyGenerator = new AssemblyGenerator();
         registerManager = new RegisterManager();
 
+        // Bootstrapper
+
+        bool needBootstrapper = false;
+        foreach (var pair in variables)
+        {
+            VariableInfo variable = pair.Value;
+
+            SyntaxNode optimizedExpression
+                = Optimizer.OptimizeExpression(variable.ValueExpression);
+
+            string initialValue = "0";
+            if (optimizedExpression is IntegerNode valueInteger)
+            {
+                long maximumValue = variable.Type.MaximumValue;
+                if (valueInteger.Value > maximumValue)
+                {
+                    throw new InvalidTypeCastException(
+                        variable.ValueExpression.Location,
+                        null, variable.Type,
+                        "possible value loss"
+                    );
+                }
+
+                initialValue = valueInteger.Value.ToString();
+            }
+            else
+            {
+                GenerateAssignment(
+                    variable.ValueExpression,
+                    new SymbolValue(variable.Type, variable.AssemblySymbol, 0),
+                    optimizedExpression
+                );
+                needBootstrapper = true;
+            }
+            
+            assemblyGenerator.EmitVariable(
+                pair.Key, pair.Value.Type.AssemblyDeclaration,
+                initialValue
+            );
+        }
+
+        if (needBootstrapper)
+        {
+            assemblyGenerator.EmitInstruction("jmp", "_main");
+
+            assemblyGenerator.EmitSymbol("start");
+            assemblyGenerator.InsertFunctionCode();
+        }
+
         // Functions
 
         foreach (var pair in functions)
@@ -861,51 +910,6 @@ public class Compiler
             registerManager.ResetUsedRegisters();
         }
 
-        // Bootstrapper
-
-        foreach (var pair in variables)
-        {
-            VariableInfo variable = pair.Value;
-
-            SyntaxNode optimizedExpression
-                = Optimizer.OptimizeExpression(variable.ValueExpression);
-
-            string initialValue = "0";
-            if (optimizedExpression is IntegerNode valueInteger)
-            {
-                long maximumValue = variable.Type.MaximumValue;
-                if (valueInteger.Value > maximumValue)
-                {
-                    throw new InvalidTypeCastException(
-                        variable.ValueExpression.Location,
-                        null, variable.Type,
-                        "possible value loss"
-                    );
-                }
-
-                initialValue = valueInteger.Value.ToString();
-            }
-            else
-            {
-                GenerateAssignment(
-                    variable.ValueExpression,
-                    new SymbolValue(variable.Type, variable.AssemblySymbol, 0),
-                    optimizedExpression
-                );
-            }
-            
-            assemblyGenerator.EmitVariable(
-                pair.Key, pair.Value.Type.AssemblyDeclaration,
-                initialValue
-            );
-        }
-
-        assemblyGenerator.EmitInstruction("call", "_main");
-        assemblyGenerator.EmitInstruction("ret");
-
-        assemblyGenerator.EmitSymbol("start");
-        assemblyGenerator.InsertFunctionCode();
-
         // Read and write functions
 
         assemblyGenerator.EmitInstruction("sub", "esp", "12");
@@ -937,6 +941,8 @@ public class Compiler
         assemblyGenerator.EmitInstructionToText("leave");
         assemblyGenerator.EmitInstructionToText("ret");
 
-        return assemblyGenerator.LinkAssembly();
+        return assemblyGenerator.LinkAssembly(
+            entry: needBootstrapper ? "start" : "_main"
+        );
     }
 }

@@ -220,7 +220,8 @@ public class Compiler
     }
 
     /// <summary>
-    /// Generates data transfer from the source to the destination
+    /// Generates data transfer from the source to the destination.
+    /// Frees the source Value
     /// </summary>
     /// <param name="node">The syntax node the transfer happens within,
     /// used for exception throwing</param>
@@ -231,9 +232,9 @@ public class Compiler
         SyntaxNode node, StronglyTypedValue destination,
         Value source, bool explicitTypeCast = false)
     {
-        if (source.Type is not null)
+        if (source.Type is not null && !explicitTypeCast)
         {
-            if (!explicitTypeCast && destination.StrongType.IsSigned != source.Type.IsSigned)
+            if (destination.StrongType.IsSigned != source.Type.IsSigned)
             {
                 throw new InvalidTypeCastException(
                     node.Location,
@@ -242,7 +243,7 @@ public class Compiler
                 );
             }
 
-            if (!explicitTypeCast && destination.StrongType.Size < source.Type.Size)
+            if (destination.StrongType.Size < source.Type.Size)
             {
                 throw new InvalidTypeCastException(
                     node.Location, source.Type, destination.StrongType,
@@ -286,24 +287,12 @@ public class Compiler
         }
         else
         {
-            Value converted;
-            switch (source)
+            Value converted = source switch
             {
-                case RegisterValue register:
-                    converted = register with { Type = destination.StrongType };
-                    break;
-
-                case SymbolValue symbol:
-                    converted = symbol with { Type = destination.StrongType };
-                    break;
-
-                case IntegerValue integer:
-                    converted = ConvertIntegerValue(node, integer, destination.StrongType, true);
-                    break;
-
-                default:
-                    throw new ArgumentException("Unexpected value class", nameof(source));
-            }
+                RegisterValue register => register with { Type = destination.StrongType },
+                SymbolValue   symbol   => symbol   with { Type = destination.StrongType },
+                _ => throw new ArgumentException("Unexpected value class", nameof(source)),
+            };
 
             if (Value.SameLocation(destination, converted))
             {
@@ -712,8 +701,6 @@ public class Compiler
             value = CompileValue(expression, destination.StrongType);
             GenerateMov(node, destination, value);
         }
-
-        registerManager.FreeRegister(value);
     }
 
     /// <summary>

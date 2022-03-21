@@ -7,7 +7,6 @@ using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 #warning TODO Add function arguments to readme.md
-#warning TODO Revise GenerateAssignment value freeing
 
 const string code = @"
 i32 a = 0;

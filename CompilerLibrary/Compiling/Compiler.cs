@@ -747,6 +747,8 @@ public class Compiler
         assemblyGenerator = new AssemblyGenerator();
         registerManager = new RegisterManager();
 
+        // Functions
+
         foreach (var pair in functions)
         {
             if (pair.Key == "_read" || pair.Key == "_write")
@@ -789,31 +791,42 @@ public class Compiler
             registerManager.ResetUsedRegisters();
         }
 
+        // Bootstrapper
+
         foreach (var pair in variables)
         {
             VariableInfo variable = pair.Value;
 
-            if (variable.ValueExpression is not IntegerNode valueInteger)
+            SyntaxNode optimizedExpression
+                = Optimizer.OptimizeExpression(variable.ValueExpression);
+
+            string initialValue = "0";
+            if (optimizedExpression is IntegerNode valueInteger)
             {
-                throw new UnexpectedSyntaxNodeException(
-                    variable.ValueExpression, "a number"
+                long maximumValue = variable.Type.MaximumValue;
+                if (valueInteger.Value > maximumValue)
+                {
+                    throw new InvalidTypeCastException(
+                        variable.ValueExpression.Location,
+                        null, variable.Type,
+                        "possible value loss"
+                    );
+                }
+
+                initialValue = valueInteger.Value.ToString();
+            }
+            else
+            {
+                GenerateAssignment(
+                    variable.ValueExpression,
+                    new SymbolValue(variable.Type, variable.AssemblySymbol, 0),
+                    optimizedExpression
                 );
             }
-
-            long maximumValue = variable.Type.MaximumValue;
-            if (valueInteger.Value > maximumValue)
-            {
-                throw new InvalidTypeCastException(
-                    variable.ValueExpression.Location,
-                    null, variable.Type,
-                    "possible value loss"
-                );
-            }
-
-            string variableValue = valueInteger.Value.ToString();
+            
             assemblyGenerator.EmitVariable(
                 pair.Key, pair.Value.Type.AssemblyDeclaration,
-                variableValue
+                initialValue
             );
         }
 
@@ -822,6 +835,8 @@ public class Compiler
 
         assemblyGenerator.EmitSymbol("start");
         assemblyGenerator.InsertFunctionCode();
+
+        // Read and write functions
 
         assemblyGenerator.EmitInstruction("sub", "esp", "12");
         assemblyGenerator.EmitInstruction("lea", "eax", "[esp + 8]");

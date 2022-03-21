@@ -461,7 +461,7 @@ public class Compiler
                     throw new NotCallableTypeException(functionCall.Location, function);
                 }
 
-                return functionType.FunctionInfo.ReturnType;
+                return functionType.ReturnType;
 
             case BinaryNode binary:
                 TypeInfo? leftType = EvaluateType(binary.Left);
@@ -507,7 +507,7 @@ public class Compiler
         for (int i = 0; i < functionCall.Arguments.Length; i++)
         {
             SymbolValue argumentLocation = new(
-                functionType.FunctionInfo.Arguments[i].Type,
+                functionType.ArgumentTypes[i],
                 "esp", i * ARGUMENT_OFFSET
             );
 
@@ -520,7 +520,7 @@ public class Compiler
         RegisterValue? returnRegister = null;
         if (mustReturnValue)
         {
-            if (functionType.FunctionInfo.ReturnType is null)
+            if (functionType.ReturnType is null)
             {
                 throw new NoReturnValueException(
                     functionCall.Location,
@@ -530,7 +530,7 @@ public class Compiler
 
             // The register the function result is returned in
             (returnRegister, int oldValueNewRegister) = registerManager.RequireRegister(
-                functionCall, functionType.FunctionInfo.ReturnType,
+                functionCall, functionType.ReturnType,
                 RegisterManager.RETURN_REGISTER_ID
             );
 

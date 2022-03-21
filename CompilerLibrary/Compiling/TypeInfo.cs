@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace CompilerLibrary.Compiling;
 
@@ -56,7 +57,20 @@ public record TypeInfo(
     /// The keyword used to declare a value of the type in assembly
     /// </summary>
     public string AssemblyDeclaration => $"d{ASSEMBLY_TYPES[Size][0]}";
+
+    public override string ToString() => Name;
 }
 
-public record FunctionPointerTypeInfo(FunctionInfo FunctionInfo)
-    : TypeInfo(Size: 4, Name: $"{FunctionInfo.ReturnType?.Name}@()", IsSigned: false);
+public record FunctionPointerTypeInfo(TypeInfo? ReturnType, TypeInfo[] ArgumentTypes)
+    : TypeInfo(
+        Size: 4,
+        Name: $"{ReturnType?.Name}@({string.Join(", ", (IEnumerable<TypeInfo>)ArgumentTypes)})",
+        IsSigned: false
+    )
+{
+    public FunctionPointerTypeInfo(FunctionInfo FunctionInfo)
+        : this(
+            FunctionInfo.ReturnType,
+            FunctionInfo.Arguments.Select(x => x.Type).ToArray()
+        ) { }
+}

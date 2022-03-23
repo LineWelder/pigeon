@@ -7,10 +7,12 @@ public enum TokenType
     IntegerLiteral,
     Assign,
     Plus, Minus, Star, Slash,
+    Equals, NotEquals, Less, Greater, LessEquals, GreaterEquals,
     LeftParenthesis, RightParenthesis,
     LeftCurlyBrace, RightCurlyBrace,
     Coma, Semicolon,
     Colon,
+    If, Else, While,
     Return
 }
 

@@ -257,7 +257,7 @@ public class Parser
         SyntaxNode result;
         Token firstToken = tokenizer.CurrentToken;
 
-        if (firstToken.Type is TokenType.Return)
+        if (firstToken.Type is TokenType.ReturnKeyword)
         {
             tokenizer.NextToken();
             if (tokenizer.CurrentToken.Type is TokenType.Semicolon)

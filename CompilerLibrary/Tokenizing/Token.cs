@@ -12,8 +12,8 @@ public enum TokenType
     LeftCurlyBrace, RightCurlyBrace,
     Coma, Semicolon,
     Colon,
-    If, Else, While,
-    Return
+    IfKeyword, ElseKeyword, WhileKeyword,
+    ReturnKeyword
 }
 
 /// <summary>

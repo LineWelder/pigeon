@@ -28,7 +28,7 @@ public class Tokenizer
 
     private static readonly Dictionary<string, TokenType> KEYWORDS = new()
     {
-        { "return", TokenType.Return }
+        { "return", TokenType.ReturnKeyword }
     };
 
     /// <summary>

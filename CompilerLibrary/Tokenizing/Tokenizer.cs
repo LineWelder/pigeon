@@ -23,12 +23,17 @@ public class Tokenizer
         { '}', TokenType.RightCurlyBrace },
         { ',', TokenType.Coma },
         { ';', TokenType.Semicolon },
-        { ':', TokenType.Colon }
+        { ':', TokenType.Colon },
+        { '>', TokenType.Greater },
+        { '<', TokenType.Less }
     };
 
     private static readonly Dictionary<string, TokenType> KEYWORDS = new()
     {
-        { "return", TokenType.ReturnKeyword }
+        { "return", TokenType.ReturnKeyword },
+        { "if",     TokenType.IfKeyword },
+        { "else",   TokenType.ElseKeyword },
+        { "while",  TokenType.WhileKeyword }
     };
 
     /// <summary>

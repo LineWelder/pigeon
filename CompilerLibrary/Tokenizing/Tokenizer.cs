@@ -12,7 +12,7 @@ public class Tokenizer
 {
     private static readonly Dictionary<char, TokenType> SYMBOLS = new()
     {
-        { '=', TokenType.Equals },
+        { '=', TokenType.Assign },
         { '+', TokenType.Plus },
         { '-', TokenType.Minus },
         { '*', TokenType.Star },

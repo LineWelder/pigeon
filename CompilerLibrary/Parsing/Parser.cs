@@ -283,11 +283,11 @@ public class Parser
                     return left;
                 }
 
-                Consume(TokenType.Equals, "= or ;");
+                Consume(TokenType.Assign, "= or ;");
             }
             else
             {
-                Consume(TokenType.Equals, "=");
+                Consume(TokenType.Assign, "=");
             }
 
             result = new AssignmentNode(
@@ -355,7 +355,7 @@ public class Parser
         switch (currentToken.Type)
         {
             // It is a variable declaration
-            case TokenType.Equals:
+            case TokenType.Assign:
                 // It means that we have "smth = ...",
                 // so we expect the name instead of =
                 if (type is null)

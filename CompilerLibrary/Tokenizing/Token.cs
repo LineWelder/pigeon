@@ -5,7 +5,7 @@ public enum TokenType
     EndOfFile,
     Identifier,
     IntegerLiteral,
-    Equals,
+    Assign,
     Plus, Minus, Star, Slash,
     LeftParenthesis, RightParenthesis,
     LeftCurlyBrace, RightCurlyBrace,

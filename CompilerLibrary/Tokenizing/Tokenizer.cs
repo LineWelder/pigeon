@@ -128,7 +128,7 @@ public class Tokenizer
         SkipWhiteSpaces();
         Location currentLocation = new(filePath, currentLine, currentColumn);
 
-        // Identifier
+        // Identifier or a keyword
         if (IsValidIdentifierStarter(currentCharacter))
         {
             StringBuilder identifier = new();

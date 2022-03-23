@@ -28,6 +28,14 @@ public class Tokenizer
         { '<', TokenType.Less }
     };
 
+    private static readonly Dictionary<string, TokenType> DOUBLE_SYMBOLS = new()
+    {
+        { "==", TokenType.Equals },
+        { "!=", TokenType.NotEquals },
+        { ">=", TokenType.GreaterEquals },
+        { "<=", TokenType.LessEquals }
+    };
+
     private static readonly Dictionary<string, TokenType> KEYWORDS = new()
     {
         { "return", TokenType.ReturnKeyword },
@@ -181,16 +189,6 @@ public class Tokenizer
             );
         }
 
-        // Symbol
-        else if (SYMBOLS.TryGetValue(currentCharacter, out TokenType tokenType))
-        {
-            NextCharacter();
-            CurrentToken = new Token(
-                currentLocation,
-                tokenType
-            );
-        }
-
         // End of file
         else if (currentCharacter == '\0')
         {
@@ -200,9 +198,29 @@ public class Tokenizer
             );
         }
 
+        // Possibly symbol
         else
         {
-            throw new UnexpectedCharacterException(currentLocation, currentCharacter);
+            Location firstCharacterLocation = currentLocation;
+            char firstCharacter = currentCharacter;
+            NextCharacter();
+
+            string possibleDoubleSymbol = string.Concat(firstCharacter, currentCharacter);
+            TokenType tokenType;
+            
+            if (DOUBLE_SYMBOLS.TryGetValue(possibleDoubleSymbol, out tokenType))
+            {
+                NextCharacter();
+            }
+            else if (!SYMBOLS.TryGetValue(firstCharacter, out tokenType))
+            {
+                throw new UnexpectedCharacterException(currentLocation, currentCharacter);
+            }
+
+            CurrentToken = new Token(
+                firstCharacterLocation,
+                tokenType
+            );
         }
     }
 }

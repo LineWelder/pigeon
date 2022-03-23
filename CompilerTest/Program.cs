@@ -7,17 +7,17 @@ using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 const string code = @"
-i32 a = 2;
-i32 b = 3;
-i32 c = 4;
-
-i32 sum(i32 a, i32 b)
-{
-    return a + b;
-}
+i32 input = 0;
 
 i32 main()
 {
+    input = read();
+    if (input == 1)
+    {
+        write(42);
+    }
+
+    return 0;
 }
 ";
 
@@ -29,10 +29,17 @@ Compiler compiler = new();
 
 try
 {
-    SyntaxNode[] nodes = parser.ParseFile();
+    do
+    {
+        tokenizer.NextToken();
+        Console.WriteLine(tokenizer.CurrentToken);
+    }
+    while (!tokenizer.ReachedTheEOF);
+    // SyntaxNode[] nodes = parser.ParseFile();
+    // Debug.PrintSyntaxNode(nodes[0]);
 
-    compiler.RegisterDeclarations(nodes);
-    Console.WriteLine(compiler.CompileAll());
+    // compiler.RegisterDeclarations(nodes);
+    // Console.WriteLine(compiler.CompileAll());
 }
 catch (CompilerException ex)
 {

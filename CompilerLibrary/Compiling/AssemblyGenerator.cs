@@ -93,7 +93,7 @@ internal class AssemblyGenerator
     /// </summary>
     public void EmitLabel(string label)
     {
-        EmitSymbol(label);
+        currentFunction.AppendLine($"{label}:");
     }
 
     /// <summary>

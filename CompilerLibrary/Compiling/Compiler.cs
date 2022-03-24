@@ -748,6 +748,13 @@ public class Compiler
     {
         switch (node)
         {
+            case CompoundStatementNode compound:
+                foreach (SyntaxNode innerStatement in compound.Body)
+                {
+                    CompileStatement(innerStatement);
+                }
+                break;
+            
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
                 if (left is not SymbolValue leftSymbol)

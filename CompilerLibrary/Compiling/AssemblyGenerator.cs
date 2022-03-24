@@ -84,13 +84,16 @@ internal class AssemblyGenerator
         => currentFunction.AppendLine(BuildInstruction(opcode, arguments));
 
     /// <summary>
+    /// Registers a new label to be used later
+    /// </summary>
+    public string NewLabel() => $".L{nextLabelId++}";
+
+    /// <summary>
     /// Creates a new label pointing to the next instruction
     /// </summary>
-    public string EmitLabel()
+    public void EmitLabel(string label)
     {
-        string label = $".L{nextLabelId++}";
         EmitSymbol(label);
-        return label;
     }
 
     /// <summary>

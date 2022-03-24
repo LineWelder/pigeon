@@ -9,7 +9,7 @@ namespace CompilerLibrary.Parsing;
 /// </summary>
 public class Parser
 {
-    private static readonly Dictionary<TokenType, BinaryNodeOperation> BINARY_OPERATIONS = new()
+    internal static readonly Dictionary<TokenType, BinaryNodeOperation> BINARY_OPERATIONS = new()
     {
         { TokenType.Plus, BinaryNodeOperation.Addition },
         { TokenType.Minus, BinaryNodeOperation.Subtraction },

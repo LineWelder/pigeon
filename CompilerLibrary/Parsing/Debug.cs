@@ -1,17 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CompilerLibrary.Tokenizing;
+using System;
+using System.Linq;
 
 namespace CompilerLibrary.Parsing;
 
 public static class Debug
 {
-    private static readonly Dictionary<BinaryNodeOperation, char> BINARY_OPERATORS = new()
+    /// <summary>
+    /// Finds the given value in the given dictionary
+    /// </summary>
+    /// <returns>The key of the found value</returns>
+    private static string GetOperationOperator(BinaryNodeOperation operation)
     {
-        { BinaryNodeOperation.Addition, '+' },
-        { BinaryNodeOperation.Subtraction, '-' },
-        { BinaryNodeOperation.Multiplication, '*' },
-        { BinaryNodeOperation.Divizion, '/' },
-    };
+        TokenType operationToken = Parser.BINARY_OPERATIONS
+            .Where(pair => pair.Value == operation)
+            .FirstOrDefault()
+            .Key;
+        if (operationToken == TokenType.EndOfFile)
+        {
+            throw new ArgumentException(
+                "The corresponding token not found",
+                nameof(operation)
+            );
+        }
+
+        char symbol = Tokenizer.SYMBOLS
+            .Where(pair => pair.Value == operationToken)
+            .FirstOrDefault()
+            .Key;
+        if (symbol != '\0')
+        {
+            return symbol.ToString();
+        }
+
+        string? doubleSymbol = Tokenizer.DOUBLE_SYMBOLS
+            .Where(pair => pair.Value == operationToken)
+            .FirstOrDefault()
+            .Key;
+        if (doubleSymbol is not null)
+        {
+            return doubleSymbol.ToString();
+        }
+
+        throw new ArgumentException(
+            "The corresponding operator not found",
+            nameof(operation)
+        );
+    }
 
     /// <summary>
     /// Prints the given syntax node into console and
@@ -118,7 +153,7 @@ public static class Debug
                         <= Parser.BINARY_OPERATION_PRIORITIES[binary.Operation];
 
                 PrintInParenthesesIfNeeded(binary.Left, leftParentheses);
-                Console.Write($" {BINARY_OPERATORS[binary.Operation]} ");
+                Console.Write($" {GetOperationOperator(binary.Operation)} ");
                 PrintInParenthesesIfNeeded(binary.Right, rightParentheses);
 
                 break;

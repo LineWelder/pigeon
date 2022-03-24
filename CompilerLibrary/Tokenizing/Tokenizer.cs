@@ -10,7 +10,7 @@ namespace CompilerLibrary.Tokenizing;
 /// </summary>
 public class Tokenizer
 {
-    private static readonly Dictionary<char, TokenType> SYMBOLS = new()
+    internal static readonly Dictionary<char, TokenType> SYMBOLS = new()
     {
         { '=', TokenType.Assign },
         { '+', TokenType.Plus },
@@ -28,7 +28,7 @@ public class Tokenizer
         { '<', TokenType.Less }
     };
 
-    private static readonly Dictionary<string, TokenType> DOUBLE_SYMBOLS = new()
+    internal static readonly Dictionary<string, TokenType> DOUBLE_SYMBOLS = new()
     {
         { "==", TokenType.Equals },
         { "!=", TokenType.NotEquals },

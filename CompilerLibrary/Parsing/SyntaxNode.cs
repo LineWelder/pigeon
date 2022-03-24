@@ -101,6 +101,15 @@ public record CompoundStatementNode(
 ) : SyntaxNode(Location);
 
 /// <summary>
+/// Represents an if or if-else statement
+/// </summary>
+public record BranchingNode(
+    Location Location,
+    SyntaxNode Condition,
+    SyntaxNode ThenBranch, SyntaxNode? ElseBranch
+) : SyntaxNode(Location);
+
+/// <summary>
 /// Represents an assignment statement
 /// </summary>
 public record AssignmentNode(

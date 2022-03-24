@@ -11,9 +11,15 @@ i32 input = 0;
 
 i32 main()
 {
+    if (input == 2)
     {
-        input = input == 2 + 3;
+        input = 1;
     }
+    else if (input == 3)
+    {
+        input = 99;
+    }
+    else return 1;
 
     return 0;
 }

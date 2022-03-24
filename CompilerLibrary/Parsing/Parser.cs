@@ -286,6 +286,26 @@ public class Parser
                 );
                 break;
 
+            case TokenType.IfKeyword:
+                tokenizer.NextToken();
+                Consume(TokenType.LeftParenthesis, "(");
+                SyntaxNode condition = ParseExpression();
+                Consume(TokenType.RightParenthesis, ")");
+                SyntaxNode thenBranch = ParseStatement();
+
+                SyntaxNode? elseBranch = null;
+                if (tokenizer.CurrentToken.Type is TokenType.ElseKeyword)
+                {
+                    tokenizer.NextToken();
+                    elseBranch = ParseStatement();
+                }
+
+                result = new BranchingNode(
+                    firstToken.Location,
+                    condition, thenBranch, elseBranch
+                );
+                break;
+
             case TokenType.ReturnKeyword:
                 tokenizer.NextToken();
                 if (tokenizer.CurrentToken.Type is TokenType.Semicolon)

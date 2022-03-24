@@ -76,6 +76,23 @@ public static class Debug
             }
         }
 
+        void PrintInnerStatement(SyntaxNode innerNode)
+        {
+            if (innerNode is CompoundStatementNode)
+            {
+                PrintSyntaxNode(innerNode, offset);
+            }
+            else
+            {
+                MakeOffset();
+                Console.WriteLine('{');
+                PrintSyntaxNode(innerNode, offset + 4);
+                Console.WriteLine();
+                MakeOffset();
+                Console.Write("}");
+            }
+        }
+
         MakeOffset();
         switch (node)
         {
@@ -167,6 +184,21 @@ public static class Debug
                 }
                 MakeOffset();
                 Console.Write('}');
+
+                break;
+
+            case BranchingNode branching:
+                Console.Write("if (");
+                PrintSyntaxNode(branching.Condition);
+                Console.WriteLine(')');
+                PrintInnerStatement(branching.ThenBranch);
+                if (branching.ElseBranch is not null)
+                {
+                    Console.WriteLine();
+                    MakeOffset();
+                    Console.WriteLine("else");
+                    PrintInnerStatement(branching.ElseBranch);
+                }
 
                 break;
 

@@ -717,6 +717,16 @@ public class Compiler
     }
 
     /// <summary>
+    /// Generates a conditional jump to the label based on the given condition
+    /// </summary>
+    /// <param name="inverted">If true, the jump will occur if the condition is false</param>
+    private void GenerateConditionalJump(SyntaxNode condition, string label, bool inverted)
+    {
+        // Not implemented
+        assemblyGenerator.EmitInstruction("jmp", label);
+    }
+
+    /// <summary>
     /// Compiles the expression, and movs it's result into destination
     /// </summary>
     /// <param name="node">The node of the assignment</param>
@@ -754,7 +764,30 @@ public class Compiler
                     CompileStatement(innerStatement);
                 }
                 break;
-            
+
+            case BranchingNode branching:
+                bool hasElseBranch = branching.ElseBranch is not null;
+
+                string? elseLabel = hasElseBranch ? assemblyGenerator.NewLabel() : null;
+                string endLabel = assemblyGenerator.NewLabel();
+
+                GenerateConditionalJump(
+                    branching.Condition,
+                    hasElseBranch ? elseLabel! : endLabel,
+                    inverted: true
+                );
+                CompileStatement(branching.ThenBranch);
+
+                if (hasElseBranch)
+                {
+                    assemblyGenerator.EmitInstruction("jmp", endLabel!);
+                    assemblyGenerator.EmitLabel(elseLabel!);
+                    CompileStatement(branching.ElseBranch!);
+                }
+
+                assemblyGenerator.EmitLabel(endLabel);
+                break;
+
             case AssignmentNode assignment:
                 Value left = CompileValue(assignment.Left);
                 if (left is not SymbolValue leftSymbol)

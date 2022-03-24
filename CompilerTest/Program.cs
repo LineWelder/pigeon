@@ -11,11 +11,7 @@ i32 input = 0;
 
 i32 main()
 {
-    input = read();
-    if (input == 1)
-    {
-        write(42);
-    }
+    input = input == 1;
 
     return 0;
 }
@@ -29,14 +25,8 @@ Compiler compiler = new();
 
 try
 {
-    do
-    {
-        tokenizer.NextToken();
-        Console.WriteLine(tokenizer.CurrentToken);
-    }
-    while (!tokenizer.ReachedTheEOF);
-    // SyntaxNode[] nodes = parser.ParseFile();
-    // Debug.PrintSyntaxNode(nodes[0]);
+    SyntaxNode[] nodes = parser.ParseFile();
+    Debug.PrintSyntaxNode(nodes[1]);
 
     // compiler.RegisterDeclarations(nodes);
     // Console.WriteLine(compiler.CompileAll());

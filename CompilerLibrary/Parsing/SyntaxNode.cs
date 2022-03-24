@@ -50,7 +50,13 @@ public enum BinaryNodeOperation
     Addition,
     Subtraction,
     Multiplication,
-    Divizion
+    Divizion,
+    EqualityCheck,
+    InequalityCheck,
+    LessThanCheck,
+    GreaterThanCheck,
+    LessEqualCheck,
+    GreaterEqualCheck,
 }
 
 /// <summary>

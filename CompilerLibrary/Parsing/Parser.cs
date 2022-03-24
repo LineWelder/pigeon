@@ -14,15 +14,27 @@ public class Parser
         { TokenType.Plus, BinaryNodeOperation.Addition },
         { TokenType.Minus, BinaryNodeOperation.Subtraction },
         { TokenType.Star, BinaryNodeOperation.Multiplication },
-        { TokenType.Slash, BinaryNodeOperation.Divizion }
+        { TokenType.Slash, BinaryNodeOperation.Divizion },
+        { TokenType.Equals, BinaryNodeOperation.EqualityCheck },
+        { TokenType.NotEquals, BinaryNodeOperation.InequalityCheck },
+        { TokenType.Less, BinaryNodeOperation.LessThanCheck },
+        { TokenType.Greater, BinaryNodeOperation.GreaterThanCheck },
+        { TokenType.LessEquals, BinaryNodeOperation.LessEqualCheck },
+        { TokenType.GreaterEquals, BinaryNodeOperation.GreaterEqualCheck },
     };
 
     internal static readonly Dictionary<BinaryNodeOperation, int> BINARY_OPERATION_PRIORITIES = new()
     {
-        { BinaryNodeOperation.Addition, 0 },
-        { BinaryNodeOperation.Subtraction, 0 },
-        { BinaryNodeOperation.Multiplication, 1 },
-        { BinaryNodeOperation.Divizion, 1 }
+        { BinaryNodeOperation.EqualityCheck, 0 },
+        { BinaryNodeOperation.InequalityCheck, 0 },
+        { BinaryNodeOperation.LessThanCheck, 0 },
+        { BinaryNodeOperation.GreaterThanCheck, 0 },
+        { BinaryNodeOperation.LessEqualCheck, 0 },
+        { BinaryNodeOperation.GreaterEqualCheck, 0 },
+        { BinaryNodeOperation.Addition, 1 },
+        { BinaryNodeOperation.Subtraction, 1 },
+        { BinaryNodeOperation.Multiplication, 2 },
+        { BinaryNodeOperation.Divizion, 2 }
     };
 
     private readonly Tokenizer tokenizer;

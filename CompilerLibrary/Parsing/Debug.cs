@@ -158,6 +158,18 @@ public static class Debug
 
                 break;
 
+            case CompoundStatementNode compoundStatement:
+                Console.WriteLine('{');
+                foreach (SyntaxNode statement in compoundStatement.Body)
+                {
+                    PrintSyntaxNode(statement, offset + 4);
+                    Console.WriteLine();
+                }
+                MakeOffset();
+                Console.Write('}');
+
+                break;
+
             case AssignmentNode assignment:
                 PrintSyntaxNode(assignment.Left);
                 Console.Write(" = ");

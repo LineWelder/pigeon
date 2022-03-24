@@ -92,6 +92,15 @@ public record FunctionCallNode(
 ) : SyntaxNode(Location);
 
 /// <summary>
+/// Represents a compound statements
+/// "{ statement1; statement2; }"
+/// </summary>
+public record CompoundStatementNode(
+    Location Location,
+    SyntaxNode[] Body
+) : SyntaxNode(Location);
+
+/// <summary>
 /// Represents an assignment statement
 /// </summary>
 public record AssignmentNode(

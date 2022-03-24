@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using CompilerLibrary;
 using CompilerLibrary.Compiling;
@@ -13,7 +11,9 @@ i32 input = 0;
 
 i32 main()
 {
-    input = input == 2 + 3;
+    {
+        input = input == 2 + 3;
+    }
 
     return 0;
 }

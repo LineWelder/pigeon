@@ -262,53 +262,73 @@ public class Parser
     /// <summary>
     /// Parses a single statement
     /// </summary>
-    /// <remarks>Supports only assignment statements now</remarks>
     /// <returns>The parsed node</returns>
     private SyntaxNode ParseStatement()
     {
         SyntaxNode result;
         Token firstToken = tokenizer.CurrentToken;
 
-        if (firstToken.Type is TokenType.ReturnKeyword)
+        switch (firstToken.Type)
         {
-            tokenizer.NextToken();
-            if (tokenizer.CurrentToken.Type is TokenType.Semicolon)
-            {
+            case TokenType.LeftCurlyBrace:
                 tokenizer.NextToken();
-                return new ReturnNode(firstToken.Location, null);
-            }
 
-            result = new ReturnNode(
-                firstToken.Location,
-                ParseExpression()
-            );
-        }
-        else
-        {
-            SyntaxNode left = ParseExpression();
+                List<SyntaxNode> innerStatements = new();
+                while (tokenizer.CurrentToken.Type is not TokenType.RightCurlyBrace)
+                {
+                    innerStatements.Add(ParseStatement());
+                }
+                tokenizer.NextToken();
 
-            if (left is FunctionCallNode)
-            {
+                result = new CompoundStatementNode(
+                    firstToken.Location,
+                    innerStatements.ToArray()
+                );
+                break;
+
+            case TokenType.ReturnKeyword:
+                tokenizer.NextToken();
                 if (tokenizer.CurrentToken.Type is TokenType.Semicolon)
                 {
                     tokenizer.NextToken();
-                    return left;
+                    return new ReturnNode(firstToken.Location, null);
                 }
 
-                Consume(TokenType.Assign, "= or ;");
-            }
-            else
-            {
-                Consume(TokenType.Assign, "=");
-            }
+                result = new ReturnNode(
+                    firstToken.Location,
+                    ParseExpression()
+                );
 
-            result = new AssignmentNode(
-                left.Location, left,
-                Right: ParseExpression()
-            );
+                Consume(TokenType.Semicolon, ";");
+                break;
+
+            default:
+                SyntaxNode left = ParseExpression();
+
+                if (left is FunctionCallNode)
+                {
+                    if (tokenizer.CurrentToken.Type is TokenType.Semicolon)
+                    {
+                        tokenizer.NextToken();
+                        return left;
+                    }
+
+                    Consume(TokenType.Assign, "= or ;");
+                }
+                else
+                {
+                    Consume(TokenType.Assign, "=");
+                }
+
+                result = new AssignmentNode(
+                    left.Location, left,
+                    Right: ParseExpression()
+                );
+
+                Consume(TokenType.Semicolon, ";");
+                break;
         }
 
-        Consume(TokenType.Semicolon, ";");
         return result;
     }
 

@@ -202,6 +202,14 @@ public static class Debug
 
                 break;
 
+            case WhileLoopNode whileLoop:
+                Console.Write("while (");
+                PrintSyntaxNode(whileLoop.Condition);
+                Console.WriteLine(')');
+                PrintInnerStatement(whileLoop.Body);
+
+                break;
+
             case AssignmentNode assignment:
                 PrintSyntaxNode(assignment.Left);
                 Console.Write(" = ");

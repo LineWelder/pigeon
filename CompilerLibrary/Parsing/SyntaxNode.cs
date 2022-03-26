@@ -110,6 +110,14 @@ public record BranchingNode(
 ) : SyntaxNode(Location);
 
 /// <summary>
+/// Represents a while loop
+/// </summary>
+public record WhileLoopNode(
+    Location Location,
+    SyntaxNode Condition, SyntaxNode Body
+) : SyntaxNode(Location);
+
+/// <summary>
 /// Represents an assignment statement
 /// </summary>
 public record AssignmentNode(

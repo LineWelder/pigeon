@@ -289,7 +289,7 @@ public class Parser
             case TokenType.IfKeyword:
                 tokenizer.NextToken();
                 Consume(TokenType.LeftParenthesis, "(");
-                SyntaxNode condition = ParseExpression();
+                SyntaxNode ifCondition = ParseExpression();
                 Consume(TokenType.RightParenthesis, ")");
                 SyntaxNode thenBranch = ParseStatement();
 
@@ -302,7 +302,20 @@ public class Parser
 
                 result = new BranchingNode(
                     firstToken.Location,
-                    condition, thenBranch, elseBranch
+                    ifCondition, thenBranch, elseBranch
+                );
+                break;
+
+            case TokenType.WhileKeyword:
+                tokenizer.NextToken();
+                Consume(TokenType.LeftParenthesis, "(");
+                SyntaxNode whileCondition = ParseExpression();
+                Consume(TokenType.RightParenthesis, ")");
+                SyntaxNode whileBody = ParseStatement();
+
+                result = new WhileLoopNode(
+                    firstToken.Location,
+                    whileCondition, whileBody
                 );
                 break;
 

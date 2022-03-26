@@ -14,16 +14,32 @@ public class Compiler
     {
         { "i32", new TypeInfo(Size: 4, Name: "i32", IsSigned: true) },
         { "i16", new TypeInfo(Size: 2, Name: "i16", IsSigned: true) },
-        { "i8",  new TypeInfo(Size: 1, Name: "i8",  IsSigned: true) },
+        { "i8", new TypeInfo(Size: 1, Name: "i8", IsSigned: true) },
         { "u32", new TypeInfo(Size: 4, Name: "u32", IsSigned: false) },
         { "u16", new TypeInfo(Size: 2, Name: "u16", IsSigned: false) },
-        { "u8",  new TypeInfo(Size: 1, Name: "u8",  IsSigned: false) }
+        { "u8", new TypeInfo(Size: 1, Name: "u8", IsSigned: false) }
     };
 
     private static readonly FunctionPointerTypeInfo MAIN_SIGNATURE
         = new(COMPILED_TYPES["i32"], Array.Empty<TypeInfo>());
 
     private const int ARGUMENT_OFFSET = 4;
+
+    /// <summary>
+    /// The table of instruction opcodes corresponding to the binary operations
+    /// The inversion of the n-th operation is
+    /// (JUMP_OPCODES.Length - n - 1)-th in the table
+    /// </summary>
+    private static readonly (BinaryNodeOperation operation, string opcode)[]
+        JUMP_OPCODES = new[]
+    {
+            (BinaryNodeOperation.EqualityCheck, "je"),
+            (BinaryNodeOperation.LessThanCheck, "jl"),
+            (BinaryNodeOperation.GreaterThanCheck, "jg"),
+            (BinaryNodeOperation.LessEqualCheck, "jle"),
+            (BinaryNodeOperation.GreaterEqualCheck, "jge"),
+            (BinaryNodeOperation.InequalityCheck, "jne")
+    };
 
     private readonly Dictionary<string, VariableInfo> variables = new();
     private readonly Dictionary<string, FunctionInfo> functions = new()
@@ -324,7 +340,7 @@ public class Compiler
             Value converted = source switch
             {
                 RegisterValue register => register with { Type = destination.StrongType },
-                SymbolValue   symbol   => symbol   with { Type = destination.StrongType },
+                SymbolValue symbol => symbol with { Type = destination.StrongType },
                 _ => throw new ArgumentException("Unexpected value class", nameof(source)),
             };
 
@@ -606,6 +622,55 @@ public class Compiler
     }
 
     /// <summary>
+    /// Is used for generating arithmetic instructions
+    /// </summary>
+    /// <param name="opcode">The instruction opcode</param>
+    /// <param name="binary">The expression to compile</param>
+    /// <param name="targetType">The required result type</param>
+    /// <returns>The value containing the result</returns>
+    private Value GenerateArithmetic(
+        string opcode, BinaryNode binary, TypeInfo? targetType = null)
+    {
+        TypeInfo? resultType = EvaluateType(binary) ?? targetType;
+
+        Value left = CompileValue(binary.Left, resultType);
+        Value right = CompileValue(binary.Right, resultType);
+
+        if (left.Type is not null && right.Type is not null
+         && left.Type.IsSigned != right.Type.IsSigned)
+        {
+            throw new InvalidTypeCastException(
+                binary.Location,
+                right.Type, left.Type,
+                "operand types must be either both signed or unsigned"
+            );
+        }
+
+        if (left is not RegisterValue)
+        {
+            if (right is RegisterValue && binary.Operation is BinaryNodeOperation.Addition)
+            {
+                (left, right) = (right, left);
+            }
+            else
+            {
+                RegisterValue accumulator = registerManager.AllocateRegister(binary, resultType!);
+                GenerateMov(binary, accumulator, left);
+                left = accumulator;
+            }
+        }
+
+        if (resultType is not null)
+        {
+            right = GenerateTypeCast(binary, right, resultType);
+        }
+
+        assemblyGenerator.EmitInstruction(opcode, left, right);
+        registerManager.FreeRegister(right);
+        return left;
+    }
+
+    /// <summary>
     /// Compiels an expression and appends the compiled assembly to the builder
     /// </summary>
     /// <param name="node">The expression to compile</param>
@@ -664,52 +729,15 @@ public class Compiler
                 return GenerateFunctionCall(functionCall, true)!;
 
             case BinaryNode binary:
-                TypeInfo? resultType = EvaluateType(binary) ?? targetType;
-
-                Value left = CompileValue(binary.Left, resultType);
-                Value right = CompileValue(binary.Right, resultType);
-
-                if (left.Type is not null && right.Type is not null
-                 && left.Type.IsSigned != right.Type.IsSigned)
-                {
-                    throw new InvalidTypeCastException(
-                        binary.Location,
-                        right.Type, left.Type,
-                        "operand types must be either both signed or unsigned"
-                    );
-                }
-
-                if (left is not RegisterValue)
-                {
-                    if (right is RegisterValue && binary.Operation is BinaryNodeOperation.Addition)
-                    {
-                        (left, right) = (right, left);
-                    }
-                    else
-                    {
-                        RegisterValue accumulator = registerManager.AllocateRegister(binary, resultType!);
-                        GenerateMov(binary, accumulator, left);
-                        left = accumulator;
-                    }
-                }
-
-                if (resultType is not null)
-                {
-                    right = GenerateTypeCast(binary, right, resultType);
-                }
-
-                assemblyGenerator.EmitInstruction(
+                return GenerateArithmetic(
                     binary.Operation switch
                     {
-                        BinaryNodeOperation.Addition    => "add",
+                        BinaryNodeOperation.Addition => "add",
                         BinaryNodeOperation.Subtraction => "sub",
                         _ => throw new NotImplementedException()
                     },
-                    left, right
+                    binary, targetType
                 );
-
-                registerManager.FreeRegister(right);
-                return left;
 
             default:
                 throw new UnexpectedSyntaxNodeException(node, "expression");
@@ -722,8 +750,29 @@ public class Compiler
     /// <param name="inverted">If true, the jump will occur if the condition is false</param>
     private void GenerateConditionalJump(SyntaxNode condition, string label, bool inverted)
     {
-        // Not implemented
-        assemblyGenerator.EmitInstruction("jmp", label);
+        if (condition is not BinaryNode binary)
+        {
+            throw new UnexpectedSyntaxNodeException(condition, "comparison expression");
+        }
+
+        int opcodeIndex = Array.FindIndex(
+            JUMP_OPCODES, x => x.operation == binary.Operation
+        );
+        if (opcodeIndex == -1)
+        {
+            throw new UnexpectedSyntaxNodeException(condition, "comparison expression");
+        }
+
+        if (inverted)
+        {
+            opcodeIndex = JUMP_OPCODES.Length - opcodeIndex - 1;
+        }
+
+        registerManager.FreeRegister(GenerateArithmetic("cmp", binary));
+        assemblyGenerator.EmitInstruction(
+            JUMP_OPCODES[opcodeIndex].opcode,
+            label
+        );
     }
 
     /// <summary>

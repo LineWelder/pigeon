@@ -7,20 +7,20 @@ using CompilerLibrary.Parsing;
 using CompilerLibrary.Tokenizing;
 
 const string code = @"
-i32 input = 0;
+i32 age = 0;
 
 i32 main()
 {
-    if (input > 1)
+    age = read();
+    if (age >= 18)
     {
-        input = 1;
+        write(1);
     }
     else
     {
-        input = 0;
+        write(0);
     }
 
-    write(input);
     return 0;
 }
 ";

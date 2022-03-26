@@ -818,23 +818,39 @@ public class Compiler
                 bool hasElseBranch = branching.ElseBranch is not null;
 
                 string? elseLabel = hasElseBranch ? assemblyGenerator.NewLabel() : null;
-                string endLabel = assemblyGenerator.NewLabel();
+                string ifEndLabel = assemblyGenerator.NewLabel();
 
                 GenerateConditionalJump(
                     branching.Condition,
-                    hasElseBranch ? elseLabel! : endLabel,
+                    hasElseBranch ? elseLabel! : ifEndLabel,
                     inverted: true
                 );
                 CompileStatement(branching.ThenBranch);
 
                 if (hasElseBranch)
                 {
-                    assemblyGenerator.EmitInstruction("jmp", endLabel!);
+                    assemblyGenerator.EmitInstruction("jmp", ifEndLabel!);
                     assemblyGenerator.EmitLabel(elseLabel!);
                     CompileStatement(branching.ElseBranch!);
                 }
 
-                assemblyGenerator.EmitLabel(endLabel);
+                assemblyGenerator.EmitLabel(ifEndLabel);
+                break;
+
+            case WhileLoopNode whileLoop:
+                string loopLabel = assemblyGenerator.NewLabel();
+                string whileEndLabel = assemblyGenerator.NewLabel();
+
+                assemblyGenerator.EmitLabel(loopLabel);
+                GenerateConditionalJump(
+                    whileLoop.Condition, whileEndLabel,
+                    inverted: true
+                );
+
+                CompileStatement(whileLoop.Body);
+                assemblyGenerator.EmitInstruction("jmp", loopLabel);
+
+                assemblyGenerator.EmitLabel(whileEndLabel);
                 break;
 
             case AssignmentNode assignment:

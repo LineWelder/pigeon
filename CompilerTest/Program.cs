@@ -11,16 +11,12 @@ i32 age = 0;
 
 i32 main()
 {
-    age = read();
-    if (age >= 18)
+    while (age < 18)
     {
-        write(1);
-    }
-    else
-    {
-        write(0);
+        age = read();
     }
 
+    write(age);
     return 0;
 }
 ";

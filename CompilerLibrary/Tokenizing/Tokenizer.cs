@@ -25,7 +25,8 @@ public class Tokenizer
         { ';', TokenType.Semicolon },
         { ':', TokenType.Colon },
         { '>', TokenType.Greater },
-        { '<', TokenType.Less }
+        { '<', TokenType.Less },
+        { '!', TokenType.Not }
     };
 
     internal static readonly Dictionary<string, TokenType> DOUBLE_SYMBOLS = new()
@@ -33,7 +34,9 @@ public class Tokenizer
         { "==", TokenType.Equals },
         { "!=", TokenType.NotEquals },
         { ">=", TokenType.GreaterEquals },
-        { "<=", TokenType.LessEquals }
+        { "<=", TokenType.LessEquals },
+        { "&&", TokenType.And },
+        { "||", TokenType.Or }
     };
 
     private static readonly Dictionary<string, TokenType> KEYWORDS = new()

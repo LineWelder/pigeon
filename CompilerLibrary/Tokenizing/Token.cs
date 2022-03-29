@@ -8,6 +8,7 @@ public enum TokenType
     Assign,
     Plus, Minus, Star, Slash,
     Equals, NotEquals, Less, Greater, LessEquals, GreaterEquals,
+    And, Or, Not,
     LeftParenthesis, RightParenthesis,
     LeftCurlyBrace, RightCurlyBrace,
     Coma, Semicolon,
